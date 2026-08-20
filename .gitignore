@@ -22,3 +22,5 @@ pnpm-win32-x64.zip
 .local-r2/
 /live-*.png
 /modern-*.png
+DEPLOY-CLOUDFLARE.cmd
+PUSH-TO-GITHUB.cmd
