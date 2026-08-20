@@ -81,7 +81,7 @@ export default async function LocalSeoAreaPage({ params }: Props) {
           <div className="container mx-auto max-w-4xl px-4">
             <p className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent">
               <MapPin className="h-4 w-4" aria-hidden="true" />
-              Local Cannabis Menu
+              Local Product Catalog
             </p>
             <h1 className="text-4xl font-bold leading-tight text-foreground md:text-6xl">
               {page.h1}

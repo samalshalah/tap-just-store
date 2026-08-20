@@ -342,7 +342,7 @@ export function HomePageEditor({ settings }: { settings: SiteSettings }) {
             <Input
               value={sections.featured?.label ?? ""}
               onChange={(e) => update("featured", { label: e.target.value })}
-              placeholder="Top Shelf"
+              placeholder="Featured"
             />
           </Field>
           <Field label="Title">

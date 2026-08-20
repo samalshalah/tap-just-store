@@ -10,8 +10,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const storeName = settings.store?.name || DEFAULTS.storeName;
   const city = settings.location?.city || settings.seo?.city || DEFAULTS.city;
   const state = settings.location?.state || DEFAULTS.state;
-  const title = `Cannabis Guides & Local Resources | ${storeName}`;
-  const description = `Read ${storeName} cannabis guides, product education, pickup tips, and local resources for customers in ${city}, ${state}.`;
+  const title = `Guides & Resources | ${storeName}`;
+  const description = `Read ${storeName} product guides, how-tos, setup tips, and company news for customers in ${city}, ${state}.`;
   return {
     title: { absolute: title },
     description,
@@ -28,7 +28,7 @@ export default async function BlogIndexPage() {
       <section className="bg-card border-b border-border/50 pt-12 pb-8">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-3">
-            Cannabis Guides & Local Resources
+            Guides & Resources
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Helpful guides, product education, store updates, and local search-friendly content.

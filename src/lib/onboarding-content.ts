@@ -57,7 +57,7 @@ function fallbackBusiness(input: OnboardingBusinessInput) {
   const market = joinLocation(city, state);
   const tagline =
     clean(input.tagline) ||
-    `Cannabis menu, local pickup, and friendly service in ${market}.`;
+    `Quality products, local pickup, and friendly service in ${market}.`;
 
   return { name, city, state, market, tagline };
 }
@@ -99,7 +99,7 @@ export function generateOnboardingSettingsDraft(
   const instagram = clean(input.instagram);
 
   const metaDescription =
-    `${name} is a cannabis store in ${market} with a live menu, curated products, local pickup, and clear product information for adults 21 and over.`
+    `${name} is an online store in ${market} with a live product catalog, curated brands, local pickup, and clear product information for every order.`
       .replace(/\s+/g, " ")
       .trim();
 
@@ -115,10 +115,10 @@ export function generateOnboardingSettingsDraft(
       custom_domain: domain,
       footer_text:
         existing.store?.footer_text ||
-        `${name} serves ${market} with a curated cannabis menu, friendly support, and a smooth pickup experience.`,
+        `${name} serves ${market} with a curated product catalog, friendly support, and a smooth shipping and pickup experience.`,
       age_gate_message:
         existing.store?.age_gate_message ||
-        `You must be at least 21 years old to view ${name}. Please bring a valid government-issued ID for pickup.`,
+        `Welcome to ${name}. Browse the catalog, check availability, and order online for shipping or local pickup.`,
       display_age_gate: existing.store?.display_age_gate ?? true,
     },
     location: {
@@ -134,7 +134,7 @@ export function generateOnboardingSettingsDraft(
     contact: {
       ...(existing.contact ?? {}),
       title: `Contact ${name}`,
-      subtitle: `Questions about the menu, pickup, or availability? Reach out to ${name}.`,
+      subtitle: `Questions about products, shipping, or availability? Reach out to ${name}.`,
       email,
       phone,
       instagram,
@@ -144,10 +144,10 @@ export function generateOnboardingSettingsDraft(
       hero: {
         ...(existing.homepage_sections?.hero ?? {}),
         visible: true,
-        badge: `${market} Cannabis Menu`,
+        badge: `${market} Online Store`,
         headline: name,
         subheadline: tagline,
-        cta_primary: "Shop Menu",
+        cta_primary: "Shop Products",
         cta_primary_link: "/shop",
         cta_secondary: "Visit Us",
         cta_secondary_link: "/location",
@@ -155,9 +155,9 @@ export function generateOnboardingSettingsDraft(
       categories: {
         ...(existing.homepage_sections?.categories ?? {}),
         visible: true,
-        label: "Shop The Menu",
-        title: "Shop by category, brand, strain, or feel.",
-        subtitle: `Explore ${name}'s live menu with simple filters for the way customers actually shop.`,
+        label: "Shop The Catalog",
+        title: "Shop by category, brand, or product type.",
+        subtitle: `Explore the ${name} catalog with simple filters for the way customers actually shop.`,
         columns: existing.homepage_sections?.categories?.columns ?? 4,
         mobile_columns: existing.homepage_sections?.categories?.mobile_columns ?? 2,
         card_size: existing.homepage_sections?.categories?.card_size ?? "sm",
@@ -166,22 +166,22 @@ export function generateOnboardingSettingsDraft(
       featured: {
         ...(existing.homepage_sections?.featured ?? {}),
         visible: true,
-        label: "Featured Strains",
-        title: "Popular picks from the live menu.",
-        subtitle: `Browse current ${name} inventory and discover fresh products, brands, and strains.`,
+        label: "Featured Products",
+        title: "Popular picks from the current catalog.",
+        subtitle: `Browse current ${name} inventory and discover new products, brands, and bundles.`,
       },
       why_us: {
         ...(existing.homepage_sections?.why_us ?? {}),
         visible: true,
         label: "Why Shop With Us",
-        title: `A better cannabis shopping experience in ${market}.`,
+        title: `A better online shopping experience in ${market}.`,
         subtitle: `${name} focuses on clear product details, local service, and a simple online ordering flow.`,
       },
       newsletter: {
         ...(existing.homepage_sections?.newsletter ?? {}),
         visible: true,
         label: "Stay Updated",
-        title: `Get ${name} menu updates.`,
+        title: `Get ${name} product updates.`,
         subtitle:
           "Stay close to new arrivals, limited drops, and store updates from the team.",
       },
@@ -189,17 +189,17 @@ export function generateOnboardingSettingsDraft(
     about: {
       ...(existing.about ?? {}),
       title: `About ${name}`,
-      subtitle: `${name} is built around a clear, local, customer-first cannabis shopping experience.`,
-      headline: `Serving ${market} with curated cannabis products.`,
+      subtitle: `${name} is built around a clear, local, customer-first shopping experience.`,
+      headline: `Serving ${market} with curated products.`,
       content:
-        `${name} helps adults shop cannabis with confidence. The menu is organized around real product information, current availability, and simple pickup planning.\n\n` +
-        `Our goal is to make every visit easier: customers can browse products, compare categories, review strains and brands, and prepare their order before arriving.`,
+        `${name} helps customers shop with confidence. The catalog is organized around real product information, current availability, and simple shipping and pickup planning.\n\n` +
+        `Our goal is to make every order easier: customers can browse products, compare categories, review specifications and brands, and check out in a few steps.`,
       mission:
-        "Make cannabis shopping simple, transparent, and locally useful for every customer.",
+        "Make online shopping simple, transparent, and locally useful for every customer.",
       vision:
-        "Become the easiest local cannabis menu for customers to discover, compare, and order from.",
+        "Become the easiest local product catalog for customers to discover, compare, and order from.",
       highlights: [
-        "Live menu organized by category, brand, strain type, and feel",
+        "Live catalog organized by category, brand, product type, and price",
         "SEO-ready product, category, and brand pages",
         "Simple pickup flow with clear store information",
       ],
@@ -215,18 +215,18 @@ export function generateOnboardingSettingsDraft(
       subtitle: `Find ${name}, review store details, and plan your pickup.`,
       intro:
         address.length > 0
-          ? `${name} is located at ${address}. Browse the live menu before visiting so your pickup is quick and simple.`
-          : `Browse the live ${name} menu before visiting so your pickup is quick and simple.`,
+          ? `${name} is located at ${address}. Browse the catalog before visiting so your pickup is quick and simple.`
+          : `Browse the ${name} catalog before visiting so your pickup is quick and simple.`,
       show_hours: existing.location_page?.show_hours ?? true,
       show_map: existing.location_page?.show_map ?? true,
-      cta_text: "Shop Menu",
+      cta_text: "Shop Products",
     },
     contact_page: {
       ...(existing.contact_page ?? {}),
       h1: `Contact ${name}`,
-      subtitle: "Questions about products, pickup, or store details?",
+      subtitle: "Questions about products, orders, or store details?",
       intro:
-        `${name} is here to help customers understand the menu, product availability, and pickup process before they arrive.`
+        `${name} is here to help customers understand the catalog, product availability, and the shipping and pickup process.`
           .replace(/\s+/g, " ")
           .trim(),
       success_message:
@@ -240,10 +240,10 @@ export function generateOnboardingSettingsDraft(
       subtitle: "Helpful answers for new and returning customers.",
       items: [
         {
-          id: "onboarding-age-id",
-          question: `Do I need to be 21 or older to shop at ${name}?`,
+          id: "onboarding-shipping",
+          question: `Does ${name} ship orders or offer local pickup?`,
           answer:
-            "Yes. Customers must be adults 21 and over and should bring a valid government-issued ID for pickup.",
+            "Both options are supported. Choose shipping or local pickup at checkout, and the store team will confirm your order details.",
           category: "Store",
           published: true,
         },
@@ -251,16 +251,16 @@ export function generateOnboardingSettingsDraft(
           id: "onboarding-ordering",
           question: "How do I place an online order?",
           answer:
-            "Browse the live menu, add products to your cart, and submit your pickup request. Availability may change as inventory updates.",
+            "Browse the catalog, add products to your cart, and submit your order. Availability may change as inventory updates.",
           category: "Ordering",
           published: true,
         },
         {
           id: "onboarding-products",
-          question: "Can I shop by brand, strain type, or feel?",
+          question: "Can I shop by category, brand, or price?",
           answer:
-            "Yes. The menu can be filtered by category, brand, strain type, and feel so customers can find products faster.",
-          category: "Menu",
+            "Yes. The catalog can be filtered by category, brand, product type, and price so customers can find products faster.",
+          category: "Products",
           published: true,
         },
         {
@@ -275,10 +275,10 @@ export function generateOnboardingSettingsDraft(
         },
         {
           id: "onboarding-pricing",
-          question: "Are menu prices and products always current?",
+          question: "Are catalog prices and products always current?",
           answer:
-            "The website is designed to show live inventory, but product availability and pricing can change. The store team confirms final details during pickup.",
-          category: "Menu",
+            "The website is designed to show live inventory, but product availability and pricing can change. The store team confirms final details when your order is processed.",
+          category: "Products",
           published: true,
         },
       ],
@@ -293,41 +293,41 @@ export function generateOnboardingSettingsDraft(
       auto_structured_data: true,
       page_home: {
         ...(existing.seo?.page_home ?? {}),
-        title: `${name} | Cannabis Menu in ${market}`,
+        title: `${name} | Online Store in ${market}`,
         description: metaDescription,
         h1: name,
       },
       page_shop: {
         ...(existing.seo?.page_shop ?? {}),
-        title: `Shop Cannabis in ${market} | ${name}`,
-        description: `Browse the live ${name} cannabis menu by product category, brand, strain type, and feel. Plan your local pickup in ${market}.`,
-        h1: `Shop Cannabis in ${market}`,
+        title: `Shop Products in ${market} | ${name}`,
+        description: `Browse the ${name} catalog by product category, brand, product type, and price. Order online for shipping or local pickup in ${market}.`,
+        h1: `Shop Products in ${market}`,
       },
       page_product: {
         ...(existing.seo?.page_product ?? {}),
         title: `{product} | ${name}`,
-        description: `View product details, brand, strain type, category, and availability from the live ${name} menu in ${market}.`,
+        description: `View product details, brand, specifications, category, and availability from the ${name} catalog in ${market}.`,
       },
       page_category: {
         ...(existing.seo?.page_category ?? {}),
-        title: `{category} Cannabis Products | ${name}`,
-        description: `Shop cannabis categories from ${name}'s live menu in ${market}.`,
+        title: `{category} Products | ${name}`,
+        description: `Shop {category} products from the ${name} catalog in ${market}.`,
       },
       page_brand: {
         ...(existing.seo?.page_brand ?? {}),
-        title: `{brand} Cannabis Products | ${name}`,
-        description: `Browse cannabis brands currently available at ${name} in ${market}.`,
+        title: `{brand} Products | ${name}`,
+        description: `Browse {brand} products currently available at ${name} in ${market}.`,
       },
       page_blog: {
         ...(existing.seo?.page_blog ?? {}),
-        title: `${name} Blog | Cannabis Guides and Store Updates`,
-        description: `Read ${name} updates, cannabis shopping guides, product education, and local menu news for ${market}.`,
+        title: `${name} Blog | Buying Guides and Store Updates`,
+        description: `Read ${name} updates, product buying guides, setup tips, and new arrival news for ${market}.`,
       },
     },
     shop_config: {
       ...(existing.shop_config ?? {}),
-      h1: `Shop Cannabis in ${market}`,
-      subtitle: `Browse ${name}'s live menu by category, brand, strain type, and feel.`,
+      h1: `Shop Products in ${market}`,
+      subtitle: `Browse the ${name} catalog by category, brand, product type, and price.`,
       layout: existing.shop_config?.layout ?? "hybrid",
       sidebar_show_category: existing.shop_config?.sidebar_show_category ?? true,
       sidebar_show_strain: existing.shop_config?.sidebar_show_strain ?? true,

@@ -4,13 +4,25 @@ import { getSiteSettings } from "@/lib/settings";
 import { DEFAULTS } from "@/lib/defaults";
 import type { WeekDay } from "@/lib/types";
 
-const JUST_CHILL_GOOGLE_MAPS_URL =
-  "https://www.google.com/maps/place/Just+Chill+DC+Licensed+Weed,+Cannabis,+and+THC+Dispensary/data=!4m2!3m1!1s0x0:0x880f94af6b578e6b?sa=X&ved=1t:2428&ictx=111";
-const JUST_CHILL_MAP_QUERY =
-  "Just Chill DC Licensed Weed, Cannabis, and THC Dispensary";
-const JUST_CHILL_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  JUST_CHILL_MAP_QUERY
-)}&output=embed`;
+function buildMapQuery(
+  storeName?: string,
+  address?: string,
+  city?: string,
+  state?: string
+): string {
+  const parts = [storeName, address, city, state].filter(Boolean);
+  return parts.length ? parts.join(", ") : "";
+}
+
+function mapsLink(query: string): string {
+  return query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+    : "https://www.google.com/maps";
+}
+
+function mapsEmbed(query: string): string {
+  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+}
 
 const DAY_LABELS: Record<WeekDay, string> = {
   monday: "Monday",
@@ -61,7 +73,14 @@ export default async function LocationPage() {
   const email = settings.contact?.email;
   const hideAddress = settings.store?.display_hide_address ?? false;
   const address = loc.address || settings.store?.address;
-  const mapEmbedUrl = loc.mapEmbedUrl || JUST_CHILL_MAP_EMBED_URL;
+  const mapQuery = buildMapQuery(
+    settings.store?.name,
+    loc.address || settings.store?.address,
+    loc.city || settings.seo?.city,
+    loc.state
+  );
+  const mapEmbedUrl = loc.mapEmbedUrl || mapsEmbed(mapQuery);
+  const mapsUrl = mapsLink(mapQuery);
   const schedule = settings.store_hours?.schedule;
   const showHours = settings.location_page?.show_hours !== false;
   const showMap = settings.location_page?.show_map !== false;
@@ -193,7 +212,7 @@ export default async function LocationPage() {
                   </p>
                 </div>
                 <a
-                  href={JUST_CHILL_GOOGLE_MAPS_URL}
+                  href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:border-accent/60 hover:text-accent"

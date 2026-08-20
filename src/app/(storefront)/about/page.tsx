@@ -39,19 +39,19 @@ export default async function AboutPage() {
   const stats = about.stats ?? [
     { num: "5+", label: "Years Serving Locally" },
     { num: "10K+", label: "Happy Customers" },
-    { num: "100+", label: "Curated Strains" },
-    { num: "21+", label: "ID Required" },
+    { num: "100+", label: "Products Shipped Weekly" },
+    { num: "24h", label: "Order Turnaround" },
   ];
 
   const highlights = about.highlights ?? [
-    "Lab-tested products only",
+    "Quality-checked products only",
     "Knowledgeable, friendly team",
-    "Carefully curated rotating menu",
-    "Built around local compliance",
+    "Carefully curated catalog",
+    "Straightforward pricing, no surprises",
   ];
   const storyImageUrl = about.imageUrl
     ? `/api/storage${about.imageUrl}`
-    : "/images/store/store-interior-mural.webp";
+    : "/images/store/storefront-interior.webp";
 
   return (
     <>

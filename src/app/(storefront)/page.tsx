@@ -96,7 +96,7 @@ export default async function HomePage() {
   const heroOverlay = HERO_OVERLAYS[settings.homepage_theme ?? "theme1"] ?? HERO_OVERLAYS.theme1;
   const heroBgUrl = sec.hero?.bannerImageUrl
     ? `/api/storage${sec.hero.bannerImageUrl}`
-    : "/images/store/store-exterior-mural.webp";
+    : "/images/store/storefront-hero.webp";
   const heroBgUnoptimized = isStorageImageUrl(heroBgUrl);
 
   const categoriesWithCounts = categories.map((cat) => ({
@@ -183,15 +183,15 @@ export default async function HomePage() {
     .filter((group) => group.count > 0 && group.products.length > 0);
   const heroStats = [
     { value: allProducts.length.toString(), label: "In-stock items" },
-    { value: categoriesWithCounts.filter((cat) => cat.count > 0).length.toString(), label: "Menu categories" },
+    { value: categoriesWithCounts.filter((cat) => cat.count > 0).length.toString(), label: "Product categories" },
     { value: brandLinks.length.toString(), label: "Featured brands" },
   ];
 
   const features = [
-    { icon: ShieldCheck, title: "Lab Tested", desc: "Every product is rigorously tested for purity and potency." },
+    { icon: ShieldCheck, title: "Quality Checked", desc: "Every item is inspected and tested before it ships." },
     { icon: UserCheck, title: "Expert Team", desc: "Our staff is trained to guide customers with clear, useful product information." },
-    { icon: Star, title: "Premium Quality", desc: "We source thoughtfully and keep the menu focused on trusted products." },
-    { icon: Truck, title: "Fast & Discreet", desc: "Secure, private, and efficient service every single time." },
+    { icon: Star, title: "Built To Last", desc: "We source thoughtfully and keep the catalog focused on products that hold up." },
+    { icon: Truck, title: "Fast Fulfillment", desc: "Orders are picked, packed, and on their way quickly." },
   ];
 
   const heroSection = show.hero && (
@@ -267,7 +267,7 @@ export default async function HomePage() {
             href="/shop"
             className="inline-flex items-center gap-2 text-sm font-bold text-foreground/85 transition-colors hover:text-accent"
           >
-            Open full menu <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            Browse all products <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
         <div className="-mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -348,7 +348,7 @@ export default async function HomePage() {
         <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-4">
           <div>
             <span className="text-accent font-bold tracking-widest uppercase text-xs">
-              {t(sec.featured?.label, "Top Shelf")}
+              {t(sec.featured?.label, "Featured")}
             </span>
             <h2 className="text-3xl md:text-4xl font-display mt-2">
               {t(sec.featured?.title, "Featured Strains")}
@@ -386,7 +386,7 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/store/store-interior-mural.webp"
+              src="/images/store/storefront-interior.webp"
               alt="Store interior"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

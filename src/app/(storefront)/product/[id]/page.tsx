@@ -546,15 +546,15 @@ export default async function ProductDetailPage({
                 <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t border-border">
                   <div className="text-center">
                     <ShieldCheck className="w-6 h-6 mx-auto text-accent mb-1" />
-                    <p className="text-xs text-muted-foreground">Lab Tested</p>
+                    <p className="text-xs text-muted-foreground">Quality Checked</p>
                   </div>
                   <div className="text-center">
                     <Star className="w-6 h-6 mx-auto text-accent mb-1" />
-                    <p className="text-xs text-muted-foreground">Top Shelf</p>
+                    <p className="text-xs text-muted-foreground">Trusted Brands</p>
                   </div>
                   <div className="text-center">
                     <Truck className="w-6 h-6 mx-auto text-accent mb-1" />
-                    <p className="text-xs text-muted-foreground">Fast Pickup</p>
+                    <p className="text-xs text-muted-foreground">Fast Fulfillment</p>
                   </div>
                 </div>
               )}

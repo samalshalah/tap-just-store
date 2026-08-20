@@ -50,20 +50,13 @@ export function productImageFitClass(
 /**
  * Map from lowercase category name keywords to a bundled default image.
  * The images live in /public/images/categories/ and are served statically.
+ * Replace these with real category photography when available.
  */
 const CATEGORY_DEFAULTS: Array<[string[], string]> = [
-  [["flower", "flowers", "bud", "buds"], "/images/categories/flower.jpg"],
-  [["edible", "edibles", "chocolate", "gummy", "gummies", "food"], "/images/categories/edibles.jpg"],
-  [["pre-roll", "pre-rolls", "preroll", "prerolls", "joint", "joints", "cone", "cones"], "/images/categories/pre-roll.jpg"],
-  [["concentrate", "concentrates", "wax", "shatter", "rosin", "resin", "dab", "dabs", "hash"], "/images/categories/concentrates.jpg"],
-  [["vape", "vapes", "vaporizer", "vaporizers", "cartridge", "cartridges", "cart", "carts", "pen", "pens"], "/images/categories/vaporizer.jpg"],
-  [["tincture", "tinctures", "drops", "sublingual"], "/images/categories/tinctures.jpg"],
-  [["topical", "topicals", "cream", "creams", "lotion", "lotions", "balm", "balms", "salve", "salves"], "/images/categories/topicals.jpg"],
-  [["cbd", "hemp", "capsule", "capsules", "soft gel", "softgel"], "/images/categories/cbd.jpg"],
-  [["seed", "seeds"], "/images/categories/seeds.jpg"],
-  [["clone", "clones", "plant", "plants", "seedling", "seedlings"], "/images/categories/clones.jpg"],
-  [["accessory", "accessories", "gear", "pipe", "pipes", "grinder", "grinders", "glass"], "/images/categories/accessories.jpg"],
-  [["apparel", "clothing", "merch", "merchandise", "shirt", "shirts", "hat", "hats"], "/images/categories/apparel.jpg"],
+  [["stand", "stands", "display", "displays"], "/images/categories/default.webp"],
+  [["card", "cards", "tag", "tags", "keychain"], "/images/categories/default.webp"],
+  [["accessory", "accessories", "mount", "mounts", "bracket", "brackets", "plate", "plates"], "/images/categories/default.webp"],
+  [["kit", "kits", "bundle", "bundles", "pack", "packs"], "/images/categories/default.webp"],
 ];
 
 function defaultCategoryImage(name: string): string | null {

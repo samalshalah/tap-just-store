@@ -5,21 +5,33 @@ import { ContactForm } from "@/components/ContactForm";
 import { DEFAULTS } from "@/lib/defaults";
 import { openGraphImages } from "@/lib/metadata-images";
 
-const JUST_CHILL_GOOGLE_MAPS_URL =
-  "https://www.google.com/maps/place/Just+Chill+DC+Licensed+Weed,+Cannabis,+and+THC+Dispensary/data=!4m2!3m1!1s0x0:0x880f94af6b578e6b?sa=X&ved=1t:2428&ictx=111";
-const JUST_CHILL_MAP_QUERY =
-  "Just Chill DC Licensed Weed, Cannabis, and THC Dispensary";
-const JUST_CHILL_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  JUST_CHILL_MAP_QUERY
-)}&output=embed`;
+function buildMapQuery(
+  storeName?: string,
+  address?: string,
+  city?: string,
+  state?: string
+): string {
+  const parts = [storeName, address, city, state].filter(Boolean);
+  return parts.length ? parts.join(", ") : "";
+}
+
+function mapsLink(query: string): string {
+  return query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+    : "https://www.google.com/maps";
+}
+
+function mapsEmbed(query: string): string {
+  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const storeName = settings.store?.name || DEFAULTS.storeName;
   const city = settings.location?.city || settings.seo?.city || DEFAULTS.city;
   const state = settings.location?.state || DEFAULTS.state;
-  const title = `Contact ${storeName} | Cannabis Pickup in ${city}, ${state}`;
-  const description = `Call or visit ${storeName} for cannabis pickup questions, hours, directions, and live menu help in ${city}, ${state}.`;
+  const title = `Contact ${storeName} | ${city}, ${state}`;
+  const description = `Call or visit ${storeName} for order questions, hours, directions, and product help in ${city}, ${state}.`;
   return {
     title: { absolute: title },
     description,
@@ -37,8 +49,14 @@ export default async function ContactPage() {
   const loc = settings.location ?? {};
   const hideAddress = settings.store?.display_hide_address ?? false;
   const address = loc.address || settings.store?.address;
-  const mapEmbedUrl = loc.mapEmbedUrl || JUST_CHILL_MAP_EMBED_URL;
-  const mapsUrl = JUST_CHILL_GOOGLE_MAPS_URL;
+  const mapQuery = buildMapQuery(
+    settings.store?.name,
+    address,
+    loc.city || settings.seo?.city,
+    loc.state
+  );
+  const mapEmbedUrl = loc.mapEmbedUrl || mapsEmbed(mapQuery);
+  const mapsUrl = mapsLink(mapQuery);
 
   return (
     <>

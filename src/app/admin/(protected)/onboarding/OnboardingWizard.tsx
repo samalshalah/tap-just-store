@@ -384,7 +384,7 @@ function BusinessStep({
           <Input
             value={business.tagline}
             onChange={(e) => setBusinessField("tagline", e.target.value)}
-            placeholder="Licensed cannabis menu in Washington, DC"
+            placeholder="NFC review stands for local businesses"
           />
         </Field>
       </div>

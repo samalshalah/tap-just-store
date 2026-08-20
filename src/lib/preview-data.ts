@@ -55,13 +55,13 @@ function slugify(s: string): string {
 
 function imageTypeFor(category: string): string {
   switch (category) {
-    case "Edibles":
-      return "edible";
-    case "Concentrates":
-    case "Capsules":
-      return "vape";
+    case "Accessories":
+      return "accessory";
+    case "Mounts":
+    case "Cables":
+      return "hardware";
     default:
-      return "flower";
+      return "stand";
   }
 }
 
@@ -203,9 +203,9 @@ export function importPreviewProducts(rows: ImportRow[]) {
         name: productName,
         category: category.name,
         brandId: brand?.id ?? null,
-        strain: row.strainType,
+        strain: "",
         thc: row.thc || "-",
-        cbd: row.cbd || "0%",
+        cbd: row.cbd || "",
         price: Math.max(0, Math.round(row.price)),
         salePrice: null,
         imageType: imageTypeFor(category.name),

@@ -294,13 +294,13 @@ export function mapGoogleLocationToSettings(input: {
         ...(input.existing.seo?.page_home ?? {}),
         title:
           input.existing.seo?.page_home?.title ||
-          `${title} | Cannabis Menu in ${[city, state].filter(Boolean).join(", ")}`,
+          `${title} | Shop Online in ${[city, state].filter(Boolean).join(", ")}`,
       },
       page_shop: {
         ...(input.existing.seo?.page_shop ?? {}),
         title:
           input.existing.seo?.page_shop?.title ||
-          `Shop Cannabis in ${[city, state].filter(Boolean).join(", ")} | ${title}`,
+          `Shop in ${[city, state].filter(Boolean).join(", ")} | ${title}`,
       },
     },
     integrations: {

@@ -20,35 +20,35 @@ const AREA_PROFILES = [
     audience: "Washington, DC shoppers",
     travel: "from anywhere in the District",
     localNote:
-      "Use this page as the main local guide for browsing the live menu before visiting the store in Northwest DC.",
+      "Use this page as the main local guide for browsing the live catalog before visiting the store in Northwest DC.",
   },
   {
     area: "Shaw",
     audience: "Shaw residents and visitors",
     travel: "from the Shaw neighborhood",
     localNote:
-      "Shaw shoppers are close to the store, making it easy to check the menu online before planning a short visit.",
+      "Shaw shoppers are close to the store, making it easy to check the catalog online before planning a short visit.",
   },
   {
     area: "Logan Circle",
     audience: "Logan Circle customers",
     travel: "from Logan Circle",
     localNote:
-      "Logan Circle is one of the closest nearby neighborhoods for customers comparing cannabis products before heading out.",
+      "Logan Circle is one of the closest nearby neighborhoods for customers comparing products before heading out.",
   },
   {
     area: "Mount Vernon Square",
     audience: "Mount Vernon Square shoppers",
     travel: "from Mount Vernon Square",
     localNote:
-      "Customers near Mount Vernon Square can review current menu availability, pickup details, and store information in one place.",
+      "Customers near Mount Vernon Square can review current stock availability, pickup details, and store information in one place.",
   },
   {
     area: "U Street Corridor",
     audience: "U Street Corridor customers",
     travel: "from the U Street Corridor",
     localNote:
-      "The U Street Corridor is a natural nearby search area for adults looking for a clear DC cannabis menu and local store details.",
+      "The U Street Corridor is a natural nearby search area for shoppers looking for a clear DC product catalog and local store details.",
   },
   {
     area: "Downtown DC",
@@ -62,7 +62,7 @@ const AREA_PROFILES = [
     audience: "NoMa customers",
     travel: "from NoMa",
     localNote:
-      "NoMa shoppers can use the live menu to compare products and plan a convenient visit to the store.",
+      "NoMa shoppers can use the live catalog to compare products and plan a convenient visit to the store.",
   },
   {
     area: "Dupont Circle",
@@ -76,7 +76,7 @@ const AREA_PROFILES = [
     audience: "Adams Morgan customers",
     travel: "from Adams Morgan",
     localNote:
-      "Adams Morgan shoppers can use this local page to explore the current menu without digging through unrelated store pages.",
+      "Adams Morgan shoppers can use this local page to explore the current catalog without digging through unrelated store pages.",
   },
   {
     area: "Capitol Hill",
@@ -90,14 +90,14 @@ const AREA_PROFILES = [
     audience: "Navy Yard shoppers",
     travel: "from Navy Yard",
     localNote:
-      "This page supports Navy Yard customers who want to compare menu options before planning a visit to Northwest DC.",
+      "This page supports Navy Yard customers who want to compare catalog options before planning a visit to Northwest DC.",
   },
   {
     area: "Georgetown",
     audience: "Georgetown customers",
     travel: "from Georgetown",
     localNote:
-      "Georgetown shoppers can browse the menu, confirm product details, and prepare pickup information before visiting.",
+      "Georgetown shoppers can browse the catalog, confirm product details, and prepare pickup information before visiting.",
   },
   {
     area: "Columbia Heights",
@@ -111,28 +111,28 @@ const AREA_PROFILES = [
     audience: "Petworth customers",
     travel: "from Petworth",
     localNote:
-      "Petworth shoppers can use the page to understand product categories, menu availability, and store requirements.",
+      "Petworth shoppers can use the page to understand product categories, stock availability, and store pickup details.",
   },
   {
     area: "Arlington, VA",
     audience: "Arlington customers planning a DC visit",
     travel: "from Arlington, Virginia",
     localNote:
-      "For Arlington adults planning a trip into DC, this page keeps the menu, address, and age requirements easy to review.",
+      "For Arlington customers planning a trip into DC, this page keeps the catalog, address, and pickup details easy to review.",
   },
   {
     area: "Alexandria, VA",
     audience: "Alexandria customers planning a DC visit",
     travel: "from Alexandria, Virginia",
     localNote:
-      "Alexandria shoppers can compare the current DC menu before deciding whether to visit the store in Washington.",
+      "Alexandria shoppers can compare the current DC catalog before deciding whether to visit the store in Washington.",
   },
   {
     area: "Silver Spring, MD",
     audience: "Silver Spring customers planning a DC visit",
     travel: "from Silver Spring, Maryland",
     localNote:
-      "Silver Spring customers can use this page to review live menu information, store contact details, and pickup planning notes.",
+      "Silver Spring customers can use this page to review live catalog information, store contact details, and pickup planning notes.",
   },
 ] as const;
 
@@ -179,29 +179,29 @@ export function getLocalSeoPages(settings: SiteSettings): LocalSeoPage[] {
     return {
       slug: slugify(area),
       area,
-      title: `Cannabis Menu ${nearbyPhrase} | ${name}`,
-      metaDescription: `Browse the ${name} cannabis menu ${nearbyPhrase}. Compare live categories, brands, strain types, effects, prices, and pickup planning details in Washington, DC.`,
+      title: `NFC Review Stands ${nearbyPhrase} | ${name}`,
+      metaDescription: `Browse the ${name} catalog of NFC review stands and tap-to-review hardware ${nearbyPhrase}. Compare categories, brands, materials, prices, and pickup details in Washington, DC.`,
       h1:
         area === "Washington, DC"
-          ? `${name} Cannabis Menu in Washington, DC`
-          : `Cannabis Menu Near ${area}`,
-      intro: `${name} helps ${profile.audience} browse a live Washington, DC cannabis menu before visiting. Review categories, brands, strain types, product details, and pickup planning information for ${market}. ${profile.localNote}`,
+          ? `${name} NFC Review Stands in Washington, DC`
+          : `NFC Review Stands Near ${area}`,
+      intro: `${name} helps ${profile.audience} browse a live Washington, DC catalog before visiting. Review categories, brands, materials, product specs, and pickup planning information for ${market}. ${profile.localNote}`,
       sections: [
         {
-          heading: `Browse live cannabis products ${nearbyPhrase}`,
-          body: `${name} keeps a live menu with flower, pre-rolls, edibles, concentrates, vapes, tinctures, topicals, accessories, and other available categories. Product listings include brand, category, strain type, price, availability, THC/CBD details when provided, and helpful product notes for adults 21+.`,
+          heading: `Browse the live product catalog ${nearbyPhrase}`,
+          body: `${name} keeps a live catalog with NFC review stands, tap-to-review cards, keychain tags, table mounts, replacement plates, cables, and other available categories. Product listings include brand, category, material and finish, price, availability, technical specs when provided, and helpful setup notes.`,
         },
         {
           heading: `Plan a visit ${profile.travel}`,
-          body: `${address ? `${name} is located at ${address}. ` : ""}Browse online first, compare menu options, add items to your bag, and prepare your pickup details before you arrive. Adults must be 21+ and bring a valid government-issued ID.`,
+          body: `${address ? `${name} is located at ${address}. ` : ""}Browse online first, compare catalog options, add items to your cart, and prepare your pickup details before you arrive. Orders are held for pickup during posted store hours.`,
         },
         {
-          heading: `Product education for ${areaMarket}`,
-          body: `Each product page is designed to help local shoppers compare options before checkout. You can review category information, strain type, potency details when available, brand names, effects, flavors, and related product suggestions without relying on vague menu labels.`,
+          heading: `Product details for ${areaMarket}`,
+          body: `Each product page is designed to help local shoppers compare options before checkout. You can review category information, materials, dimensions, device compatibility, brand names, finish options, and related product suggestions without relying on vague catalog labels.`,
         },
         {
-          heading: `Local store details and age requirements`,
-          body: `${name} focuses on clear local information, compliant ordering, and helpful service for Washington, DC customers and nearby visitors. Pickup availability can change as inventory changes, so always check the live menu before visiting.${phone ? ` For questions, call ${phone}.` : ""}`,
+          heading: `Local store details and pickup information`,
+          body: `${name} focuses on clear local information, straightforward ordering, and helpful service for Washington, DC customers and nearby visitors. Pickup availability can change as inventory changes, so always check the live catalog before visiting.${phone ? ` For questions, call ${phone}.` : ""}`,
         },
       ],
     };
