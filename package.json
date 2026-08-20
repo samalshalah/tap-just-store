@@ -11,7 +11,8 @@
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "typecheck": "tsc --noEmit",
-    "db:push": "drizzle-kit push --config=drizzle.config.ts"
+    "db:push": "drizzle-kit push --config=drizzle.config.ts",
+    "test": "node scripts/money.test.mjs && node --experimental-strip-types --no-warnings scripts/shop-filter.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

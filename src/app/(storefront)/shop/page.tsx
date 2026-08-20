@@ -1,71 +1,49 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { getSiteSettings } from "@/lib/settings";
 import { DEFAULTS } from "@/lib/defaults";
-import {
-  getActiveStands,
-  getStandTypes,
-  getBusinessUses,
-  getStandsByBusinessUse,
-} from "@/lib/stands-data";
-import { StandCard } from "@/components/stands/StandCard";
-import { ShopFilters } from "@/components/stands/ShopFilters";
-import { formatMoney } from "@/lib/money";
 import { getVolumeTiers } from "@/lib/stands-data";
+import { getCatalogView } from "@/lib/shop-catalog";
+import { parseShopQuery, isFiltered } from "@/lib/shop-filter";
+import { ShopFilters } from "@/components/stands/ShopFilters";
+import { StandGrid } from "@/components/stands/StandGrid";
+import { formatMoney } from "@/lib/money";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const [settings, params] = await Promise.all([getSiteSettings(), searchParams]);
   const storeName = settings.store?.name || DEFAULTS.storeName;
+  const query = parseShopQuery(params);
+
   return {
     title: `Shop NFC Stands | ${storeName}`,
     description:
       "NFC stands for reviews, bookings, menus, social profiles and more. One tap sends your customers exactly where you want them. From $39.",
+    alternates: { canonical: "/shop" },
+    // Filtered states are the same products in a different order — the
+    // landing pages are what should rank, not a thousand query strings.
+    robots: isFiltered(query) ? { index: false, follow: true } : undefined,
   };
 }
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; use?: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const activeType = params.type ?? null;
-  const activeUse = params.use ?? null;
+  const query = parseShopQuery(params);
 
-  const [allStands, standTypes, businessUses, tiers] = await Promise.all([
-    getActiveStands(),
-    getStandTypes(),
-    getBusinessUses(),
-    getVolumeTiers(),
-  ]);
+  const [view, tiers] = await Promise.all([getCatalogView(query), getVolumeTiers()]);
+  const { results, typeOptions, useOptions, typeName, useName } = view;
 
-  // Counts come from the tagged relationships — a stand is never duplicated.
-  const typeOptions = standTypes
-    .map((t) => ({
-      slug: t.slug,
-      name: t.name,
-      count: allStands.filter((s) => s.standType?.slug === t.slug).length,
-    }))
-    .filter((t) => t.count > 0);
-
-  const usesWithStands = await Promise.all(
-    businessUses.map(async (u) => ({
-      slug: u.slug,
-      name: u.name,
-      count: (await getStandsByBusinessUse(u.slug)).length,
-    }))
-  );
-  const useOptions = usesWithStands.filter((u) => u.count > 0);
-
-  let visible = allStands;
-  if (activeType) visible = visible.filter((s) => s.standType?.slug === activeType);
-  if (activeUse) visible = await getStandsByBusinessUse(activeUse);
-
-  const heading =
-    standTypes.find((t) => t.slug === activeType)?.name ??
-    businessUses.find((u) => u.slug === activeUse)?.name ??
-    "All stands";
-
+  const heading = typeName ?? useName ?? "All stands";
   const firstTier = tiers[0];
 
   return (
@@ -92,35 +70,30 @@ export default async function ShopPage({
           <ShopFilters
             standTypes={typeOptions}
             businessUses={useOptions}
-            activeType={activeType}
-            activeUse={activeUse}
+            query={query}
+            resultCount={results.length}
           />
         </Suspense>
 
         <div className="mt-10 flex items-baseline justify-between">
           <h2 className="font-display text-2xl font-bold text-foreground">{heading}</h2>
           <p className="text-sm text-muted-foreground">
-            {visible.length} {visible.length === 1 ? "stand" : "stands"}
+            {results.length} {results.length === 1 ? "stand" : "stands"}
           </p>
         </div>
 
-        {visible.length === 0 ? (
-          <p className="py-20 text-center text-muted-foreground">
-            Nothing here yet. Try another category.
-          </p>
-        ) : (
-          <div className="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
-            {visible.map((item) => (
-              <StandCard key={item.stand.id} item={item} />
-            ))}
-          </div>
-        )}
+        <div className="mt-6">
+          <StandGrid results={results} />
+        </div>
 
         <p className="mt-12 text-center text-sm text-muted-foreground">
           Every stand starts at {formatMoney(3900)}. Need 25 or more?{" "}
-          <a href="/custom-stands" className="font-semibold text-accent hover:underline">
+          <Link
+            href="/custom-stands"
+            className="font-semibold text-accent hover:underline"
+          >
             Ask for a quote
-          </a>
+          </Link>
           .
         </p>
       </section>

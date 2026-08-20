@@ -212,3 +212,46 @@ export const getBusinessUseCounts = cache(
     }
   }
 );
+
+/**
+ * Business-use names keyed by stand id. Feeds the shop search box so that
+ * typing "restaurant" finds the Menu stand even though the word "restaurant"
+ * appears nowhere in its name.
+ */
+export const getUseNamesByStandId = cache(
+  async (): Promise<Record<number, string[]>> => {
+    try {
+      const rows = await db
+        .select({
+          standId: standBusinessUsesTable.standId,
+          name: businessUsesTable.name,
+        })
+        .from(standBusinessUsesTable)
+        .innerJoin(
+          businessUsesTable,
+          eq(businessUsesTable.id, standBusinessUsesTable.businessUseId)
+        );
+
+      const map: Record<number, string[]> = {};
+      for (const row of rows) {
+        (map[row.standId] ??= []).push(row.name);
+      }
+      return map;
+    } catch (err) {
+      console.error("[stands] getUseNamesByStandId failed:", err);
+      return {};
+    }
+  }
+);
+
+/** One stand type by slug, or null. */
+export async function getStandTypeBySlug(slug: string): Promise<StandType | null> {
+  const all = await getStandTypes();
+  return all.find((t) => t.slug === slug) ?? null;
+}
+
+/** One business use by slug, or null. */
+export async function getBusinessUseBySlug(slug: string): Promise<BusinessUse | null> {
+  const all = await getBusinessUses();
+  return all.find((u) => u.slug === slug) ?? null;
+}

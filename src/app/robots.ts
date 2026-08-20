@@ -30,8 +30,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           "/api",
           "/checkout",
           "/order/",
-          "/sorry",
-          "/dutchie-preview",
         ],
       },
     ],

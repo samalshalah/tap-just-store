@@ -11,7 +11,6 @@ import { SettingsProvider } from "@/components/SettingsProvider";
 import { CartProvider } from "@/components/CartContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { AgeGateModal } from "@/components/AgeGateModal";
 import { StoreJsonLd } from "@/components/StoreJsonLd";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { MobileStickyActions } from "@/components/MobileStickyActions";
@@ -68,14 +67,14 @@ export default async function StorefrontLayout({
     standTypes: standTypes
       .map((type) => ({
         name: type.name,
-        href: `/shop?type=${type.slug}`,
+        href: `/stands/type/${type.slug}`,
         count: stands.filter((s) => s.standType?.slug === type.slug).length,
       }))
       .filter((item) => item.count > 0),
     businessUses: businessUses
       .map((use) => ({
         name: use.name,
-        href: `/shop?use=${use.slug}`,
+        href: `/for/${use.slug}`,
         count: useCounts[use.slug] ?? 0,
       }))
       .filter((item) => item.count > 0),
@@ -94,7 +93,6 @@ export default async function StorefrontLayout({
             showStickyActions ? "pb-24 md:pb-0" : ""
           }`}
         >
-          <AgeGateModal />
           <Navbar shopNav={shopNav} />
           <main className="flex-grow pt-[88px] md:pt-[104px]">{children}</main>
           <Footer />

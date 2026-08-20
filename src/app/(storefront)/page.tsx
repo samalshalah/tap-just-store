@@ -78,7 +78,7 @@ export default async function HomePage() {
               {typesWithCounts.map((t) => (
                 <Link
                   key={t.slug}
-                  href={`/shop?type=${t.slug}`}
+                  href={`/stands/type/${t.slug}`}
                   className="rounded-full border border-border px-4 py-2 text-sm text-foreground/85 transition-colors hover:border-accent/60 hover:text-accent"
                 >
                   {t.name}
@@ -98,7 +98,7 @@ export default async function HomePage() {
               {businessUses.map((u) => (
                 <Link
                   key={u.slug}
-                  href={`/shop?use=${u.slug}`}
+                  href={`/for/${u.slug}`}
                   className="rounded-full border border-border px-4 py-2 text-sm text-foreground/85 transition-colors hover:border-accent/60 hover:text-accent"
                 >
                   {u.name}

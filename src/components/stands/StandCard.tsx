@@ -4,8 +4,18 @@ import { formatMoney } from "@/lib/money";
 import type { StandListItem } from "@/lib/stands-data";
 import { standCopy } from "@/lib/stand-copy";
 
-export function StandCard({ item }: { item: StandListItem }) {
-  const { stand, standType, fromCents } = item;
+export function StandCard({
+  item,
+  fromCents: fromCentsOverride,
+  monthlyCents = 0,
+}: {
+  item: StandListItem;
+  /** Price for the shopper's active size and finish, when the grid is filtered. */
+  fromCents?: number;
+  monthlyCents?: number;
+}) {
+  const { stand, standType } = item;
+  const fromCents = fromCentsOverride ?? item.fromCents;
   const copy = standCopy(stand);
 
   return (
@@ -37,6 +47,11 @@ export function StandCard({ item }: { item: StandListItem }) {
         )}
         <p className="mt-auto pt-3 text-sm font-bold text-foreground">
           From {formatMoney(fromCents)}
+          {monthlyCents > 0 && (
+            <span className="ml-1 font-medium text-muted-foreground">
+              + {formatMoney(monthlyCents)}/mo
+            </span>
+          )}
         </p>
       </div>
     </Link>

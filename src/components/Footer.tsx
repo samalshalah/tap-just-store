@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LEGAL_PAGES } from "@/lib/legal";
 import Image from "next/image";
 import {
   Leaf,
@@ -269,9 +270,22 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p suppressHydrationWarning>
-            © {year} {storeName}. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-2 md:flex-row md:gap-4">
+            <p suppressHydrationWarning>
+              © {year} {storeName}. All rights reserved.
+            </p>
+            <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+              {LEGAL_PAGES.map((page) => (
+                <Link
+                  key={page.href}
+                  href={page.href}
+                  className="hover:text-accent transition-colors"
+                >
+                  {page.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
           {showDisclaimer && (
             <p className="text-center md:text-right">
               {settings.store?.footer_text || ""}

@@ -47,7 +47,7 @@ export default async function StandPage({
         {standType && (
           <>
             <span className="mx-2">/</span>
-            <Link href={`/shop?type=${standType.slug}`} className="hover:text-accent">
+            <Link href={`/stands/type/${standType.slug}`} className="hover:text-accent">
               {standType.name}
             </Link>
           </>
@@ -109,7 +109,7 @@ export default async function StandPage({
                 {businessUses.map((u) => (
                   <Link
                     key={u.id}
-                    href={`/shop?use=${u.slug}`}
+                    href={`/for/${u.slug}`}
                     className="rounded-full border border-border px-3 py-1 text-sm text-foreground/80 hover:border-accent/50 hover:text-accent"
                   >
                     {u.name}
