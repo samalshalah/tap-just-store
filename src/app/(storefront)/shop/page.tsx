@@ -1,113 +1,129 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getSiteSettings } from "@/lib/settings";
-import { getProducts, getCategories, getBrands } from "@/lib/data";
-import { resolveShopConfig } from "@/lib/shop-config";
-import { ShopClient } from "@/components/ShopClient";
 import { DEFAULTS } from "@/lib/defaults";
-import { complianceModelName } from "@/lib/compliance";
-import { openGraphImages } from "@/lib/metadata-images";
+import {
+  getActiveStands,
+  getStandTypes,
+  getBusinessUses,
+  getStandsByBusinessUse,
+} from "@/lib/stands-data";
+import { StandCard } from "@/components/stands/StandCard";
+import { ShopFilters } from "@/components/stands/ShopFilters";
+import { formatMoney } from "@/lib/money";
+import { getVolumeTiers } from "@/lib/stands-data";
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    category?: string;
-    strain?: string;
-    brand?: string;
-    effect?: string;
-    size?: string;
-  }>;
-}): Promise<Metadata> {
-  const sp = await searchParams;
-  const [settings, brands] = await Promise.all([getSiteSettings(), getBrands()]);
-  const seo = settings.seo ?? {};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
   const storeName = settings.store?.name || DEFAULTS.storeName;
-  const city = seo.city || DEFAULTS.city;
-  const brandName = sp.brand
-    ? brands.find((brand) => brand.id === Number(sp.brand))?.name
-    : undefined;
-
-  let pageLabel = "Shop";
-  if (sp.category) pageLabel = `${sp.category}`;
-  if (sp.strain) pageLabel = `${sp.strain} ${pageLabel}`;
-  if (sp.effect) pageLabel = `${sp.effect} ${pageLabel}`;
-  if (sp.size) pageLabel = `${sp.size} ${pageLabel}`;
-  if (brandName) pageLabel = `${brandName} ${pageLabel}`;
-
-  const titleRaw = seo.page_shop?.title || seo.title_template || DEFAULTS.seoTitleTemplate;
-  const title = titleRaw
-    .replace("{page}", pageLabel)
-    .replace("{store}", storeName)
-    .replace("{city}", city);
-
-  const description =
-    seo.page_shop?.description ||
-    `Browse the ${storeName} catalog by category, brand, and price with simple online ordering.`;
-
   return {
-    title: { absolute: title },
-    description,
-    alternates: { canonical: "/shop" },
-    openGraph: { title, description, url: "/shop", images: openGraphImages(settings) },
+    title: `Shop NFC Stands | ${storeName}`,
+    description:
+      "NFC stands for reviews, bookings, menus, social profiles and more. One tap sends your customers exactly where you want them. From $39.",
   };
 }
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    category?: string;
-    strain?: string;
-    effect?: string;
-    brand?: string;
-    size?: string;
-    q?: string;
-    sort?: string;
-    page?: string;
-    minPrice?: string;
-    maxPrice?: string;
-  }>;
+  searchParams: Promise<{ type?: string; use?: string }>;
 }) {
-  const sp = await searchParams;
-  const [settings, products, categories, brands] = await Promise.all([
-    getSiteSettings(),
-    getProducts({}),
-    getCategories(),
-    getBrands(),
+  const params = await searchParams;
+  const activeType = params.type ?? null;
+  const activeUse = params.use ?? null;
+
+  const [allStands, standTypes, businessUses, tiers] = await Promise.all([
+    getActiveStands(),
+    getStandTypes(),
+    getBusinessUses(),
+    getVolumeTiers(),
   ]);
 
-  const config = resolveShopConfig(settings);
-  const storeName = settings.store?.name || DEFAULTS.storeName;
+  // Counts come from the tagged relationships — a stand is never duplicated.
+  const typeOptions = standTypes
+    .map((t) => ({
+      slug: t.slug,
+      name: t.name,
+      count: allStands.filter((s) => s.standType?.slug === t.slug).length,
+    }))
+    .filter((t) => t.count > 0);
+
+  const usesWithStands = await Promise.all(
+    businessUses.map(async (u) => ({
+      slug: u.slug,
+      name: u.name,
+      count: (await getStandsByBusinessUse(u.slug)).length,
+    }))
+  );
+  const useOptions = usesWithStands.filter((u) => u.count > 0);
+
+  let visible = allStands;
+  if (activeType) visible = visible.filter((s) => s.standType?.slug === activeType);
+  if (activeUse) visible = await getStandsByBusinessUse(activeUse);
+
+  const heading =
+    standTypes.find((t) => t.slug === activeType)?.name ??
+    businessUses.find((u) => u.slug === activeUse)?.name ??
+    "All stands";
+
+  const firstTier = tiers[0];
 
   return (
     <>
-      <section className="bg-card border-b border-border/50 pt-12 pb-8">
+      <section className="border-b border-border/50 bg-card py-12">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-3">
-            {config.h1}
+          <h1 className="font-display text-4xl font-bold text-foreground md:text-5xl">
+            NFC Stands
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            {config.subtitle ||
-              `Curated premium products from ${storeName}, available under ${complianceModelName(settings)}.`}
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            One tap sends your customer exactly where you want them. Choose the stand,
+            add your link, and it arrives ready to use.
           </p>
+          {firstTier && (
+            <p className="mt-4 inline-block rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-sm font-semibold text-accent">
+              Mix and match — {firstTier.label.toLowerCase()}
+            </p>
+          )}
         </div>
       </section>
-      <ShopClient
-        products={products}
-        categories={categories}
-        brands={brands}
-        initialCategory={sp.category}
-        initialStrain={sp.strain}
-        initialEffect={sp.effect}
-        initialBrand={sp.brand}
-        initialSize={sp.size}
-        initialSearch={sp.q}
-        initialSort={sp.sort}
-        initialPage={sp.page ? parseInt(sp.page, 10) : 1}
-        initialMinPrice={sp.minPrice ? parseInt(sp.minPrice, 10) : undefined}
-        initialMaxPrice={sp.maxPrice ? parseInt(sp.maxPrice, 10) : undefined}
-        config={config}
-      />
+
+      <section className="container mx-auto px-4 py-10">
+        <Suspense fallback={null}>
+          <ShopFilters
+            standTypes={typeOptions}
+            businessUses={useOptions}
+            activeType={activeType}
+            activeUse={activeUse}
+          />
+        </Suspense>
+
+        <div className="mt-10 flex items-baseline justify-between">
+          <h2 className="font-display text-2xl font-bold text-foreground">{heading}</h2>
+          <p className="text-sm text-muted-foreground">
+            {visible.length} {visible.length === 1 ? "stand" : "stands"}
+          </p>
+        </div>
+
+        {visible.length === 0 ? (
+          <p className="py-20 text-center text-muted-foreground">
+            Nothing here yet. Try another category.
+          </p>
+        ) : (
+          <div className="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
+            {visible.map((item) => (
+              <StandCard key={item.stand.id} item={item} />
+            ))}
+          </div>
+        )}
+
+        <p className="mt-12 text-center text-sm text-muted-foreground">
+          Every stand starts at {formatMoney(3900)}. Need 25 or more?{" "}
+          <a href="/custom-stands" className="font-semibold text-accent hover:underline">
+            Ask for a quote
+          </a>
+          .
+        </p>
+      </section>
     </>
   );
 }
