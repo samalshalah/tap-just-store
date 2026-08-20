@@ -349,7 +349,7 @@ export function HomePageEditor({ settings }: { settings: SiteSettings }) {
             <Input
               value={sections.featured?.title ?? ""}
               onChange={(e) => update("featured", { title: e.target.value })}
-              placeholder="Featured Strains"
+              placeholder="Featured Products"
             />
           </Field>
           <p className="text-xs text-zinc-500">

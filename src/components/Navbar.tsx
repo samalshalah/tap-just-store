@@ -269,7 +269,7 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
                   <MenuGroup title="Categories" items={shopNav?.categories ?? []} onClick={() => setShopMenuOpen(false)} />
                 </div>
                 <MenuGroup title="Brands" items={shopNav?.brands ?? []} onClick={() => setShopMenuOpen(false)} />
-                <MenuGroup title="Strain Types" items={shopNav?.strains ?? []} onClick={() => setShopMenuOpen(false)} />
+                <MenuGroup title="Product Types" items={shopNav?.strains ?? []} onClick={() => setShopMenuOpen(false)} />
                 <MenuGroup title="Shop by Feel" items={shopNav?.feelings ?? []} onClick={() => setShopMenuOpen(false)} />
               </div>
             </div>
@@ -331,8 +331,8 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
                 <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border bg-card/50 p-4">
                   <MobileMenuGroup title="Categories" items={shopNav?.categories ?? []} onClick={() => setMobileMenuOpen(false)} />
                   <MobileMenuGroup title="Brands" items={shopNav?.brands ?? []} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileMenuGroup title="Strains" items={shopNav?.strains ?? []} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileMenuGroup title="Feel" items={shopNav?.feelings ?? []} onClick={() => setMobileMenuOpen(false)} />
+                  <MobileMenuGroup title="Product Types" items={shopNav?.strains ?? []} onClick={() => setMobileMenuOpen(false)} />
+                  <MobileMenuGroup title="Features" items={shopNav?.feelings ?? []} onClick={() => setMobileMenuOpen(false)} />
                 </div>
               )}
               {navLinks.map((link) => (

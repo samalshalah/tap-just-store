@@ -351,7 +351,7 @@ export default async function HomePage() {
               {t(sec.featured?.label, "Featured")}
             </span>
             <h2 className="text-3xl md:text-4xl font-display mt-2">
-              {t(sec.featured?.title, "Featured Strains")}
+              {t(sec.featured?.title, "Featured Products")}
             </h2>
           </div>
           <Link

@@ -316,7 +316,7 @@ export function ShopClient({
       )}
 
       {config.sidebar.showStrain && (
-        <FilterGroup title="Strain">
+        <FilterGroup title="Product Type">
           {STRAIN_TYPES.map((s) => (
             <FilterRadio
               key={s}
@@ -331,7 +331,7 @@ export function ShopClient({
       )}
 
       {config.sidebar.showFeel && availableFeelings.length > 0 && (
-        <FilterGroup title="Feel">
+        <FilterGroup title="Features">
           <FilterRadio
             name="effect"
             value="All"
