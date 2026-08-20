@@ -31,7 +31,8 @@ const NAV = [
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
 
   { type: "section", label: "Products & Catalog" },
-  { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/stands", label: "Stands", icon: Package },
+  { href: "/admin/products", label: "Products (legacy)", icon: ShoppingBag },
   { href: "/admin/products/import", label: "Import Products", icon: ShoppingBag },
   { href: "/admin/categories", label: "Categories", icon: Layers },
   { href: "/admin/brands", label: "Brands", icon: Tags },
