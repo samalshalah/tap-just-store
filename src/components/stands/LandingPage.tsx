@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { StandGrid } from "./StandGrid";
+import { LandingHero } from "./LandingHero";
 import type { ShopResult } from "@/lib/shop-filter";
 import type { LandingCopy } from "@/lib/landing-copy";
-import { formatMoney } from "@/lib/money";
 
 export interface CrossLink {
   name: string;
@@ -24,12 +23,15 @@ export function LandingPage({
   results,
   crossLinksTitle,
   crossLinks,
+  heroImageUrl,
 }: {
   breadcrumb: { name: string; href: string }[];
   copy: LandingCopy;
   results: ShopResult[];
   crossLinksTitle: string;
   crossLinks: CrossLink[];
+  /** Lifestyle photo for this page. Empty or missing renders the text hero. */
+  heroImageUrl?: string | null;
 }) {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -48,36 +50,12 @@ export function LandingPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <section className="border-b border-border/50 bg-card py-12">
-        <div className="container mx-auto px-4">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground"
-          >
-            {breadcrumb.map((crumb, i) => (
-              <span key={crumb.href} className="flex items-center gap-1">
-                {i > 0 && <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />}
-                {i === breadcrumb.length - 1 ? (
-                  <span className="text-foreground">{crumb.name}</span>
-                ) : (
-                  <Link href={crumb.href} className="hover:text-accent">
-                    {crumb.name}
-                  </Link>
-                )}
-              </span>
-            ))}
-          </nav>
-
-          <h1 className="mt-4 max-w-3xl font-display text-3xl font-bold text-foreground md:text-4xl">
-            {copy.heading}
-          </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">{copy.intro}</p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            From {formatMoney(3900)} · No monthly fee on a direct stand · Buy 3 and
-            save 15%
-          </p>
-        </div>
-      </section>
+      <LandingHero
+        breadcrumb={breadcrumb}
+        copy={copy}
+        imageUrl={heroImageUrl || null}
+        imageAlt={`A Tap Rater stand in use — ${copy.heading}`}
+      />
 
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-6 md:grid-cols-3">

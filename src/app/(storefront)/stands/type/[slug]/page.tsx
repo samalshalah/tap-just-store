@@ -101,6 +101,7 @@ export default async function StandTypePage({
       results={data.results}
       crossLinksTitle="Other stand types"
       crossLinks={[...crossLinks, ...useLinks]}
+      heroImageUrl={data.type.heroImageUrl}
     />
   );
 }

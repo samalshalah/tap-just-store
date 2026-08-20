@@ -8,9 +8,15 @@
  */
 
 export interface LandingCopy {
+  /** Small uppercase word above the H1 — the one-word subject of the page. */
+  eyebrow: string;
   /** Page H1. */
   heading: string;
-  /** One paragraph under the H1. */
+  /** Short action headline for the shop-by-use card. */
+  cardHeading: string;
+  /** Two short lines under the H1 in the hero card, and under the card headline. */
+  tagline: string;
+  /** The longer paragraph. Used for the meta description. */
   intro: string;
   /** Three short reasons, each a heading plus a line. */
   points: { title: string; body: string }[];
@@ -40,7 +46,11 @@ const GENERIC_FAQS = [
 /** Business-use pages: /for/[slug] */
 export const USE_COPY: Record<string, LandingCopy> = {
   automotive: {
+    eyebrow: "AUTOMOTIVE",
     heading: "NFC Stands for Auto Shops and Dealerships",
+    cardHeading: "Reviews At The Key Handover",
+    tagline:
+      "Ask for the review while you are still handing back the keys.",
     intro:
       "A car repair is one of the few purchases people talk about. The moment to ask is at the counter while you are handing back the keys — not in an email three days later. Put a stand there and the ask happens by itself.",
     points: [
@@ -67,7 +77,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "restaurant-food": {
+    eyebrow: "RESTAURANTS",
     heading: "NFC Stands for Restaurants, Cafés and Bars",
+    cardHeading: "Turn Checkout Into Reviews",
+    tagline:
+      "Ask happy customers to leave a review before they leave.",
     intro:
       "Menus, reviews, ordering, Wi-Fi, your Instagram — a table only has room for so much printed paper. One stand covers whichever of those matters most tonight, and you can change your mind later.",
     points: [
@@ -98,7 +112,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "hotel-travel": {
+    eyebrow: "HOTELS",
     heading: "NFC Stands for Hotels, B&Bs and Travel",
+    cardHeading: "From Check-In To Five Stars",
+    tagline:
+      "Answer questions at check-in, collect the review at check-out.",
     intro:
       "Guests arrive with questions and leave with opinions. A stand at reception and one in each room answers the questions on the way in and collects the opinion on the way out.",
     points: [
@@ -125,7 +143,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "healthcare-dental": {
+    eyebrow: "PRACTICES",
     heading: "NFC Stands for Dental and Medical Practices",
+    cardHeading: "Reviews At The Front Desk",
+    tagline:
+      "Turn a good appointment into a review at the front desk.",
     intro:
       "Patients choose a practice on reputation, and reputation is public now. A stand at the front desk turns a good appointment into a review without anyone having to ask out loud.",
     points: [
@@ -152,7 +174,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "home-services": {
+    eyebrow: "TRADES",
     heading: "NFC Stands for Home Services and Trades",
+    cardHeading: "A Counter In Your Van",
+    tagline:
+      "A counter you can carry, for trades without one.",
     intro:
       "You do not have a counter, so the counter travels with you. Keep a stand in the van and hold it out when the job is signed off and the customer is happy.",
     points: [
@@ -179,7 +205,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   legal: {
+    eyebrow: "LAW FIRMS",
     heading: "NFC Stands for Law Firms",
+    cardHeading: "Reviews Without Asking Twice",
+    tagline:
+      "Ask at the moment a client is most grateful.",
     intro:
       "Legal clients research hard before they call, and they read reviews before they read your website. A stand in the meeting room makes the ask at the point where a client is most grateful.",
     points: [
@@ -206,7 +236,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "real-estate": {
+    eyebrow: "REAL ESTATE",
     heading: "NFC Stands for Real Estate Agents",
+    cardHeading: "Every Open House, One Tap",
+    tagline:
+      "An open house is a room full of phones already.",
     intro:
       "An open house is a room full of people holding their phones already. Give them something to tap and you leave with the listing details in their pocket and, later, the review on your profile.",
     points: [
@@ -233,7 +267,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "beauty-salon-wellness": {
+    eyebrow: "SALONS",
     heading: "NFC Stands for Salons, Spas and Wellness Studios",
+    cardHeading: "Ask While They Love The Mirror",
+    tagline:
+      "They just liked what they saw in the mirror. Ask now.",
     intro:
       "A client who just looked in the mirror and liked what they saw is the best reviewer you will ever get. The stand is at the payment counter, and it takes them four seconds.",
     points: [
@@ -260,7 +298,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "ecommerce-online-brand": {
+    eyebrow: "ONLINE BRANDS",
     heading: "NFC Stands for Online Brands and Pop-Ups",
+    cardHeading: "From The Stall To Your Store",
+    tagline:
+      "Carry the visitor from your stall back to your store.",
     intro:
       "When an online brand shows up in a physical room — a market stall, a pop-up, a trade stand — the hard part is carrying the visitor back online. One tap does it.",
     points: [
@@ -287,7 +329,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
   },
 
   "retail-local-business": {
+    eyebrow: "RETAIL",
     heading: "NFC Stands for Retail and Local Business",
+    cardHeading: "Four Seconds At The Counter",
+    tagline:
+      "Four seconds at the counter, every single customer.",
     intro:
       "Every local business has a counter, and every counter has four seconds of a customer's attention while the card machine thinks. That is what the stand is for.",
     points: [
@@ -311,7 +357,11 @@ export const USE_COPY: Record<string, LandingCopy> = {
 /** Stand-type pages: /stands/type/[slug] */
 export const TYPE_COPY: Record<string, LandingCopy> = {
   "review-stands": {
+    eyebrow: "REVIEWS",
     heading: "NFC Review Stands",
+    cardHeading: "Ask Every Customer, Every Time",
+    tagline:
+      "Ask every customer for an honest review, without the awkwardness.",
     intro:
       "Reviews do not arrive on their own. They arrive when you ask at the right moment, and the right moment is while the customer is still standing in front of you. A review stand makes the ask for you, every time, without anyone feeling awkward about it.",
     points: [
@@ -341,7 +391,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     ],
   },
   "social-media-stands": {
+    eyebrow: "SOCIAL",
     heading: "NFC Social Media Stands",
+    cardHeading: "Turn Visitors Into Followers",
+    tagline:
+      "Turn the people in your room into the audience you keep.",
     intro:
       "A follow is worth more than a like — it is permission to show up again next week. A social stand turns the people already in your room into the audience you keep.",
     points: [
@@ -361,7 +415,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "appointment-reservation-stands": {
+    eyebrow: "BOOKINGS",
     heading: "NFC Booking and Reservation Stands",
+    cardHeading: "Let Them Book Themselves",
+    tagline:
+      "Let customers book the next visit on their own phone.",
     intro:
       "The cheapest booking you will ever take is the one the customer makes themselves, standing in your shop, on their own phone.",
     points: [
@@ -381,7 +439,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "menu-info-stands": {
+    eyebrow: "MENUS",
     heading: "NFC Menu and Information Stands",
+    cardHeading: "A Menu That Is Never Old",
+    tagline:
+      "Change the menu, not the stand.",
     intro:
       "A printed menu is out of date the day a price changes. A menu stand points at a page you control, so the change costs nothing.",
     points: [
@@ -401,7 +463,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "website-link-stands": {
+    eyebrow: "WEBSITE",
     heading: "NFC Website Stands",
+    cardHeading: "Straight To The Right Page",
+    tagline:
+      "Send people straight to the page that matters.",
     intro:
       "Sometimes the destination is simply your site. A website stand is the plainest version of the product and the most flexible one.",
     points: [
@@ -421,7 +487,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "feedback-survey-stands": {
+    eyebrow: "FEEDBACK",
     heading: "NFC Feedback and Survey Stands",
+    cardHeading: "Hear It Before The Internet Does",
+    tagline:
+      "Hear the problem before the internet does.",
     intro:
       "Some feedback belongs to you before it belongs to the internet. A feedback stand sends the customer to your own form.",
     points: [
@@ -441,7 +511,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "payment-tip-donation-stands": {
+    eyebrow: "PAYMENTS",
     heading: "NFC Payment, Tip and Donation Stands",
+    cardHeading: "The Tip Jar, Cashless",
+    tagline:
+      "Put the tip jar back on a cashless counter.",
     intro:
       "Cash has stopped being the default, and the tip jar went with it. A stand pointed at your payment or donation link puts it back on the counter.",
     points: [
@@ -461,7 +535,11 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
     faqs: GENERIC_FAQS,
   },
   "loyalty-rewards-stands": {
+    eyebrow: "LOYALTY",
     heading: "NFC Loyalty and Rewards Stands",
+    cardHeading: "Sign-Ups At The Till",
+    tagline:
+      "Signing up should take less effort than a plastic card.",
     intro:
       "A loyalty scheme only works if signing up takes less effort than remembering a card. Tapping a stand takes four seconds.",
     points: [
@@ -483,7 +561,10 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
 };
 
 const NEUTRAL: LandingCopy = {
+  eyebrow: "NFC STANDS",
   heading: "NFC Stands",
+  cardHeading: "One Tap, One Destination",
+  tagline: "One tap sends your customer exactly where you want them.",
   intro:
     "One tap sends your customer exactly where you want them. Choose the stand, give us the link, and it arrives ready to use.",
   points: [

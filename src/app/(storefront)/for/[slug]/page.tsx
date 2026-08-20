@@ -96,6 +96,7 @@ export default async function BusinessUsePage({
       results={data.results}
       crossLinksTitle="Other businesses like yours"
       crossLinks={[...useLinks, ...typeLinks]}
+      heroImageUrl={data.use.heroImageUrl}
     />
   );
 }

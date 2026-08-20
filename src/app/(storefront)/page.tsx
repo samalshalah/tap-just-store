@@ -7,19 +7,24 @@ import {
   getActiveStands,
   getStandTypes,
   getBusinessUses,
+  getBusinessUseCounts,
   getVolumeTiers,
 } from "@/lib/stands-data";
 import { StandCard } from "@/components/stands/StandCard";
+import { UseCard } from "@/components/stands/UseCard";
+import { useCopy } from "@/lib/landing-copy";
 import { formatMoney } from "@/lib/money";
 
 export default async function HomePage() {
-  const [settings, stands, standTypes, businessUses, tiers] = await Promise.all([
-    getSiteSettings(),
-    getActiveStands(),
-    getStandTypes(),
-    getBusinessUses(),
-    getVolumeTiers(),
-  ]);
+  const [settings, stands, standTypes, businessUses, useCounts, tiers] =
+    await Promise.all([
+      getSiteSettings(),
+      getActiveStands(),
+      getStandTypes(),
+      getBusinessUses(),
+      getBusinessUseCounts(),
+      getVolumeTiers(),
+    ]);
 
   const storeName = settings.store?.name || DEFAULTS.storeName;
   const hero = settings.homepage_sections?.hero ?? {};
@@ -28,6 +33,17 @@ export default async function HomePage() {
   const typesWithCounts = standTypes
     .map((t) => ({ ...t, count: stands.filter((s) => s.standType?.slug === t.slug).length }))
     .filter((t) => t.count > 0);
+
+  // Photographed uses lead the grid, so the row never opens with an empty card.
+  const useCards = businessUses
+    .map((u) => ({
+      slug: u.slug,
+      copy: useCopy(u.slug, u.name),
+      imageUrl: u.heroImageUrl || null,
+      count: useCounts[u.slug] ?? 0,
+    }))
+    .filter((u) => u.count > 0)
+    .sort((a, b) => Number(Boolean(b.imageUrl)) - Number(Boolean(a.imageUrl)));
 
   return (
     <>
@@ -64,47 +80,58 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Two doors */}
+      {/* Shop by business — the cards */}
       <section className="container mx-auto px-4 py-16">
-        <div className="grid gap-10 md:grid-cols-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
-            <h2 className="font-display text-2xl font-bold text-foreground">
-              Shop by stand type
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Start with what you want people to do.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {typesWithCounts.map((t) => (
-                <Link
-                  key={t.slug}
-                  href={`/stands/type/${t.slug}`}
-                  className="rounded-full border border-border px-4 py-2 text-sm text-foreground/85 transition-colors hover:border-accent/60 hover:text-accent"
-                >
-                  {t.name}
-                  <span className="ml-1.5 text-xs text-muted-foreground">{t.count}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="font-display text-2xl font-bold text-foreground">
+            <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-foreground">
               Shop by business
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Or start with what you do.
+            <p className="mt-1 text-muted-foreground">
+              Start with what you do. Every card opens the stands that suit it.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {businessUses.map((u) => (
-                <Link
-                  key={u.slug}
-                  href={`/for/${u.slug}`}
-                  className="rounded-full border border-border px-4 py-2 text-sm text-foreground/85 transition-colors hover:border-accent/60 hover:text-accent"
-                >
-                  {u.name}
-                </Link>
-              ))}
-            </div>
+          </div>
+          <Link
+            href="/shop"
+            className="text-sm font-bold text-accent hover:underline"
+          >
+            See all stands
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {useCards.map((u) => (
+            <UseCard
+              key={u.slug}
+              href={`/for/${u.slug}`}
+              copy={u.copy}
+              imageUrl={u.imageUrl}
+              count={u.count}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Shop by stand type */}
+      <section className="border-t border-border/50 bg-card py-14">
+        <div className="container mx-auto px-4">
+          <h2 className="font-display text-2xl font-bold text-foreground">
+            Or shop by stand type
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Start with what you want people to do.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {typesWithCounts.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/stands/type/${t.slug}`}
+                className="rounded-full border border-border bg-background px-4 py-2 text-sm text-foreground/85 transition-colors hover:border-accent/60 hover:text-accent"
+              >
+                {t.name}
+                <span className="ml-1.5 text-xs text-muted-foreground">{t.count}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
