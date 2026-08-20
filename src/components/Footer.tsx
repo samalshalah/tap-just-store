@@ -14,7 +14,6 @@ import {
 import { useSettings } from "./SettingsProvider";
 import { DEFAULTS } from "@/lib/defaults";
 import { isStorageImageUrl } from "@/lib/images";
-import { complianceFooterText } from "@/lib/compliance";
 import type { WeekDay } from "@/lib/types";
 
 const DAY_LABELS: Record<WeekDay, string> = {
@@ -168,34 +167,10 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/deals"
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Deals
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href="/about"
                     className="text-muted-foreground hover:text-accent transition-colors"
                   >
                     About
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/blog"
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/location"
-                    className="text-muted-foreground hover:text-accent transition-colors"
-                  >
-                    Location
                   </Link>
                 </li>
                 <li>
@@ -299,7 +274,7 @@ export function Footer() {
           </p>
           {showDisclaimer && (
             <p className="text-center md:text-right">
-              {complianceFooterText(settings)}
+              {settings.store?.footer_text || ""}
             </p>
           )}
         </div>

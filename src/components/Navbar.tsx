@@ -12,19 +12,13 @@ import { DEFAULTS } from "@/lib/defaults";
 import { isStorageImageUrl } from "@/lib/images";
 
 const DEFAULT_NAV_LINKS = [
-  { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
-  { name: "Deals", path: "/deals" },
-  { name: "Location", path: "/location" },
-  { name: "Contact", path: "/contact" },
+  { name: "How It Works", path: "/how-it-works" },
+  { name: "Custom Stands", path: "/custom-stands" },
+  { name: "Pricing", path: "/pricing" },
+  { name: "Support", path: "/support" },
 ];
 
 const RESOURCE_LINKS = [
-  {
-    name: "Blog",
-    path: "/blog",
-    description: "Store updates, product education, and local guides.",
-  },
   {
     name: "FAQs",
     path: "/faqs",
