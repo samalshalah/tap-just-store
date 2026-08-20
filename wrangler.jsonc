@@ -2,6 +2,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "tap-just-store",
 	"main": ".open-next/worker.js",
+	"workers_dev": true,
 	"compatibility_date": "2026-04-29",
 	"compatibility_flags": [
 		"nodejs_compat",
@@ -15,6 +16,16 @@
 		{
 			"binding": "WORKER_SELF_REFERENCE",
 			"service": "tap-just-store"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA_BUCKET",
+			"bucket_name": "tap-just-media"
+		},
+		{
+			"binding": "NEXT_INC_CACHE_R2_BUCKET",
+			"bucket_name": "tap-just-next-cache"
 		}
 	],
 	"vars": {
