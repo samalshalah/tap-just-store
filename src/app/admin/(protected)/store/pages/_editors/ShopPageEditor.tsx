@@ -83,7 +83,7 @@ export function ShopPageEditor({ settings }: { settings: SiteSettings }) {
           <Input
             value={cfg.h1 ?? ""}
             onChange={(e) => update({ h1: e.target.value })}
-            placeholder="Our Menu"
+            placeholder="Shop"
           />
         </Field>
         <Field label="Subtitle (small text under H1)">

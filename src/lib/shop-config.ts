@@ -50,13 +50,13 @@ export function resolveShopConfig(settings: SiteSettings): ResolvedShopConfig {
   const mc = settings.menu_config ?? {};
 
   return {
-    h1: sc.h1 ?? settings.seo?.page_shop?.h1 ?? "Our Menu",
+    h1: sc.h1 ?? settings.seo?.page_shop?.h1 ?? "Shop",
     subtitle: sc.subtitle ?? settings.shop_page_subtitle ?? "",
     layout: sc.layout ?? "hybrid",
     sidebar: {
       showCategory: sc.sidebar_show_category ?? true,
-      showStrain: sc.sidebar_show_strain ?? true,
-      showFeel: sc.sidebar_show_feel ?? true,
+      showStrain: sc.sidebar_show_strain ?? false,
+      showFeel: sc.sidebar_show_feel ?? false,
       showBrand: sc.sidebar_show_brand ?? true,
       showPrice: sc.sidebar_show_price ?? true,
       showInStockToggle: sc.sidebar_show_in_stock_toggle ?? false,
@@ -66,8 +66,8 @@ export function resolveShopConfig(settings: SiteSettings): ResolvedShopConfig {
       mobileColumns: (sc.mobile_columns ?? mc.mobile_columns ?? 1) as 1 | 2,
       shape: sc.card_shape ?? mc.card_shape ?? "rounded",
       showCategory: sc.card_show_category ?? mc.show_category ?? true,
-      showStrainBadge: sc.card_show_strain_badge ?? mc.show_strain_badge ?? true,
-      showThcBadge: sc.card_show_thc_badge ?? mc.show_thc_badge ?? true,
+      showStrainBadge: sc.card_show_strain_badge ?? mc.show_strain_badge ?? false,
+      showThcBadge: sc.card_show_thc_badge ?? mc.show_thc_badge ?? false,
       showSaleBadge: sc.card_show_sale_badge ?? mc.show_sale_badge ?? true,
       showDealBanner: sc.card_show_deal_banner ?? mc.show_deal_banner ?? true,
       badgePosition: sc.card_badge_position ?? mc.badge_position ?? "image",

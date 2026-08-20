@@ -266,7 +266,7 @@ export function HomePageEditor({ settings }: { settings: SiteSettings }) {
               onChange={(e) =>
                 update("categories", { label: e.target.value })
               }
-              placeholder="Browse Our Menu"
+              placeholder="Browse The Store"
             />
           </Field>
           <Field label="Title">

@@ -42,7 +42,7 @@ export async function generateMetadata({
 
   const description =
     seo.page_shop?.description ||
-    `Browse ${storeName}'s curated menu by category, brand, strain type, and feel with simple local ordering.`;
+    `Browse the ${storeName} catalog by category, brand, and price with simple online ordering.`;
 
   return {
     title: { absolute: title },

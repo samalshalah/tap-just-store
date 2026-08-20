@@ -324,7 +324,7 @@ export function ShopClient({
               value={s}
               current={strain}
               onChange={(v) => setStrain(v as StrainFilter)}
-              label={s === "All" ? "All strains" : s}
+              label={s === "All" ? "All types" : s}
             />
           ))}
         </FilterGroup>
