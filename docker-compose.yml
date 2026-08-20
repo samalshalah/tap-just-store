@@ -1,0 +1,17 @@
+# Local Postgres for the Tap Rater storefront.
+# The connection string matches the Hyperdrive localConnectionString in wrangler.jsonc,
+# so both `pnpm dev` and the Cloudflare Workers preview work against it.
+services:
+  db:
+    image: postgres:16
+    container_name: taprater-db
+    environment:
+      POSTGRES_USER: preview
+      POSTGRES_PASSWORD: preview
+      POSTGRES_DB: preview
+    ports:
+      - "5432:5432"
+    volumes:
+      - taprater-pgdata:/var/lib/postgresql/data
+volumes:
+  taprater-pgdata:
