@@ -4,7 +4,7 @@ import Link from "next/link";
 import { LEGAL_PAGES } from "@/lib/legal";
 import Image from "next/image";
 import {
-  Leaf,
+  Wifi,
   MapPin,
   Phone,
   Mail,
@@ -99,13 +99,13 @@ export function Footer() {
                 <Image
                   src={logoImageUrl!}
                   alt={storeName}
-                  width={32}
+                  width={160}
                   height={32}
                   unoptimized={isStorageImageUrl(logoImageUrl)}
-                  className="object-contain"
+                  className="h-8 w-auto object-contain"
                 />
               ) : (
-                <Leaf className="w-6 h-6 text-accent" aria-hidden="true" />
+                <Wifi className="w-6 h-6 text-accent" aria-hidden="true" />
               )}
               <span>{storeName}</span>
             </Link>

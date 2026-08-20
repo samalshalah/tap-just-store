@@ -136,65 +136,68 @@ function ComingSoonLanding({
     : null;
 
   return (
-    <main className="min-h-screen bg-[#07120d] text-white">
-      <div className="min-h-screen bg-[linear-gradient(135deg,#07120d_0%,#0f2118_52%,#09100d_100%)]">
-        <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-5 sm:px-8">
-          <header className="flex items-center justify-between gap-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt={`${storeName} logo`}
-                  className="h-11 w-11 rounded-lg bg-white object-contain p-1.5"
-                />
-              ) : (
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8b95a]/40 bg-[#d8b95a]/10 text-sm font-semibold text-[#f1d77d]">
-                  JC
-                </div>
-              )}
-              <span className="truncate text-lg font-semibold tracking-wide">
-                {storeName}
-              </span>
-            </div>
-          </header>
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-5 sm:px-8">
+        <header className="flex items-center justify-between gap-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoUrl}
+                alt={`${storeName} logo`}
+                className="h-11 w-11 rounded-lg object-contain"
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-sm font-bold text-accent">
+                TR
+              </div>
+            )}
+            <span className="truncate text-lg font-semibold tracking-wide">
+              {storeName}
+            </span>
+          </div>
+        </header>
 
-          <section className="flex flex-1 flex-col items-center justify-center py-14 text-center">
-            <div className="max-w-3xl">
-              <p className="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#d8b95a]">
-                Site under maintenance
-              </p>
-              <h1 className="max-w-4xl text-4xl font-bold leading-[1.03] text-white sm:text-6xl lg:text-7xl">
-                We will be back soon.
-              </h1>
-              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/72 sm:text-xl">
-                {displayMessage}
-              </p>
-            </div>
+        <section className="flex flex-1 flex-col items-center justify-center py-14 text-center">
+          <div className="max-w-3xl">
+            <p className="mb-5 text-sm font-bold uppercase tracking-[0.24em] text-accent">
+              Site under maintenance
+            </p>
+            <h1 className="max-w-4xl font-display text-4xl font-bold leading-[1.03] tracking-[-0.02em] text-foreground sm:text-6xl">
+              We will be back soon.
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              {displayMessage}
+            </p>
+          </div>
 
-            <div className="mt-10 grid w-full max-w-2xl gap-3 sm:grid-cols-2">
-              {mapsUrl && address ? (
-                <a
-                  href={mapsUrl}
-                  className="flex min-h-28 flex-col items-center justify-center rounded-xl border border-white/12 bg-white/[0.04] p-5 text-white transition-colors hover:border-[#d8b95a]/70"
-                >
-                  <MapPin className="mb-3 h-5 w-5 text-[#d8b95a]" aria-hidden="true" />
-                  <span className="text-sm font-semibold">Google Maps</span>
-                  <span className="mt-2 text-sm leading-6 text-white/68">{address}</span>
-                </a>
-              ) : null}
-              {phone ? (
-                <a
-                  href={`tel:${phone}`}
-                  className="flex min-h-28 flex-col items-center justify-center rounded-xl border border-white/12 bg-white/[0.04] p-5 text-white transition-colors hover:border-[#d8b95a]/70"
-                >
-                  <Phone className="mb-3 h-5 w-5 text-[#d8b95a]" aria-hidden="true" />
-                  <span className="text-sm font-semibold">Phone</span>
-                  <span className="mt-2 text-sm leading-6 text-white/68">{phone}</span>
-                </a>
-              ) : null}
-            </div>
-          </section>
-        </div>
+          <div className="mt-10 grid w-full max-w-2xl gap-3 sm:grid-cols-2">
+            {mapsUrl && address ? (
+              <a
+                href={mapsUrl}
+                className="flex min-h-28 flex-col items-center justify-center rounded-xl border border-border bg-card p-5 transition-colors hover:border-accent/70"
+              >
+                <MapPin className="mb-3 h-5 w-5 text-accent" aria-hidden="true" />
+                <span className="text-sm font-semibold text-foreground">Google Maps</span>
+                <span className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {address}
+                </span>
+              </a>
+            ) : null}
+            {phone ? (
+              <a
+                href={`tel:${phone}`}
+                className="flex min-h-28 flex-col items-center justify-center rounded-xl border border-border bg-card p-5 transition-colors hover:border-accent/70"
+              >
+                <Phone className="mb-3 h-5 w-5 text-accent" aria-hidden="true" />
+                <span className="text-sm font-semibold text-foreground">Phone</span>
+                <span className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {phone}
+                </span>
+              </a>
+            ) : null}
+          </div>
+        </section>
       </div>
     </main>
   );

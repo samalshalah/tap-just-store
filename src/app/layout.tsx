@@ -4,6 +4,7 @@ import "./globals.css";
 import { getSiteSettings } from "@/lib/settings";
 import {
   getThemeCssVars,
+  resolveMode,
   DEFAULT_THEME_CONFIG,
   type ThemeConfig,
 } from "@/lib/theme";
@@ -99,6 +100,7 @@ export default async function RootLayout({
     ...(settings.theme_config ?? {}),
   };
   const cssVars = getThemeCssVars(theme);
+  const mode = resolveMode(theme);
   const fontUrl = fontStylesheetUrl(theme);
 
   // Use React's preinit to inject the Google Fonts stylesheet — this avoids
@@ -111,7 +113,15 @@ export default async function RootLayout({
   // first paint. No flash of unstyled content. The legacy app set these
   // in a useEffect — too late.
   return (
-    <html lang="en" style={cssVars as React.CSSProperties}>
+    <html
+      lang="en"
+      // data-theme-mode is what a stylesheet or a component should read if it
+      // ever needs to branch on light vs dark; colorScheme makes the browser
+      // render form controls and scrollbars to match.
+      data-theme-mode={mode}
+      className={mode}
+      style={{ ...(cssVars as React.CSSProperties), colorScheme: mode }}
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

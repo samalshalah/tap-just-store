@@ -226,6 +226,58 @@ export function contrastFg(hex: string): string {
 }
 
 /**
+ * Neutral ramps used when the chosen mode does not match the palette's own
+ * mode — for example Royal Blue (a dark palette) switched to Light.
+ *
+ * The Mode control used to be inert: it was stored and never read, so the
+ * site kept whatever the preset dictated and switching to Light appeared to
+ * do nothing. Mode now wins, and the palette contributes its accent and
+ * primary while these supply the surfaces and type.
+ */
+const NEUTRALS: Record<"light" | "dark", Omit<Palette, "id" | "name" | "mode" | "accent" | "primary">> = {
+  light: {
+    background: "#FFFFFF",
+    card: "#F7F8FA",
+    foreground: "#16181C",
+    mutedFg: "#646B75",
+    border: "#E3E6EA",
+  },
+  dark: {
+    background: "#0B0D10",
+    card: "#14171C",
+    foreground: "#F2F4F7",
+    mutedFg: "#98A1AE",
+    border: "#232830",
+  },
+};
+
+/**
+ * The surfaces a theme actually renders with.
+ *
+ * When mode agrees with the preset, the preset's own colours are used
+ * verbatim, so a hand-tuned palette like Tap Rater keeps its exact greys.
+ * When they disagree, mode decides.
+ */
+export function resolveSurfaces(
+  palette: Palette,
+  mode: "light" | "dark"
+): Pick<Palette, "background" | "card" | "foreground" | "mutedFg" | "border"> {
+  if (palette.mode === mode) {
+    const { background, card, foreground, mutedFg, border } = palette;
+    return { background, card, foreground, mutedFg, border };
+  }
+  return NEUTRALS[mode];
+}
+
+/** The mode a config actually renders in, after defaults. */
+export function resolveMode(
+  config: Partial<ThemeConfig> | null | undefined
+): "light" | "dark" {
+  const cfg: ThemeConfig = { ...DEFAULT_THEME_CONFIG, ...config };
+  return cfg.mode === "light" ? "light" : "dark";
+}
+
+/**
  * Build the inline-style object for :root that the root layout applies
  * server-side. This is what kills the flash-of-unstyled-content the
  * legacy app had — by the time the HTML reaches the browser, the
@@ -236,28 +288,30 @@ export function getThemeCssVars(
 ): Record<string, string> {
   const cfg: ThemeConfig = { ...DEFAULT_THEME_CONFIG, ...config };
   const palette = PALETTES.find((p) => p.id === cfg.preset) ?? PALETTES[0];
+  const mode: "light" | "dark" = cfg.mode === "light" ? "light" : "dark";
+  const surfaces = resolveSurfaces(palette, mode);
   const accent = cfg.accent || palette.accent;
   const primary = cfg.primary || palette.primary;
 
   return {
-    "--background": hexToHsl(palette.background),
-    "--foreground": hexToHsl(palette.foreground),
-    "--card": hexToHsl(palette.card),
-    "--card-foreground": hexToHsl(palette.foreground),
-    "--popover": hexToHsl(palette.card),
-    "--popover-foreground": hexToHsl(palette.foreground),
+    "--background": hexToHsl(surfaces.background),
+    "--foreground": hexToHsl(surfaces.foreground),
+    "--card": hexToHsl(surfaces.card),
+    "--card-foreground": hexToHsl(surfaces.foreground),
+    "--popover": hexToHsl(surfaces.card),
+    "--popover-foreground": hexToHsl(surfaces.foreground),
     "--primary": hexToHsl(primary),
     "--primary-foreground": hexToHsl(contrastFg(primary)),
-    "--secondary": hexToHsl(palette.border),
-    "--secondary-foreground": hexToHsl(palette.foreground),
-    "--muted": hexToHsl(palette.border),
-    "--muted-foreground": hexToHsl(palette.mutedFg),
+    "--secondary": hexToHsl(surfaces.border),
+    "--secondary-foreground": hexToHsl(surfaces.foreground),
+    "--muted": hexToHsl(surfaces.border),
+    "--muted-foreground": hexToHsl(surfaces.mutedFg),
     "--accent": hexToHsl(accent),
     "--accent-foreground": hexToHsl(contrastFg(accent)),
     "--destructive": "0 62.8% 30.6%",
-    "--destructive-foreground": hexToHsl(palette.foreground),
-    "--border": hexToHsl(palette.border),
-    "--input": hexToHsl(palette.border),
+    "--destructive-foreground": hexToHsl(surfaces.foreground),
+    "--border": hexToHsl(surfaces.border),
+    "--input": hexToHsl(surfaces.border),
     "--ring": hexToHsl(accent),
     "--radius": `${cfg.radius}rem`,
     "--font-sans": `'${cfg.font_body}', sans-serif`,

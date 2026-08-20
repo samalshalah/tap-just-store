@@ -116,16 +116,19 @@ export function StoreInfoForm({
               }
             />
           </Field>
-          <Field label="Logo (light theme)">
-            <AdminImageUploader
-              value={store.logo_light ?? ""}
-              onChange={(v) => setStore({ ...store, logo_light: v })}
-            />
-          </Field>
-          <Field label="Logo (dark theme)">
+          {/* The stored keys are named after the logo's own colour, not the
+              theme it appears in, which is the opposite of how it reads.
+              These labels say what each one is actually for. */}
+          <Field label="Logo for light backgrounds (a dark logo)">
             <AdminImageUploader
               value={store.logo_dark ?? ""}
               onChange={(v) => setStore({ ...store, logo_dark: v })}
+            />
+          </Field>
+          <Field label="Logo for dark backgrounds (a pale logo)">
+            <AdminImageUploader
+              value={store.logo_light ?? ""}
+              onChange={(v) => setStore({ ...store, logo_light: v })}
             />
           </Field>
           <Field label="Instagram URL">

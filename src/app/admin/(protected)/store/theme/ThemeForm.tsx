@@ -9,6 +9,7 @@ import {
   PALETTES,
   BODY_FONTS,
   DISPLAY_FONTS,
+  resolveSurfaces,
   type ThemeConfig,
 } from "@/lib/theme";
 
@@ -107,6 +108,7 @@ export function ThemeForm({ initial }: { initial: ThemeConfig | null }) {
             />
           </Field>
         </div>
+        <ThemePreview theme={theme} />
         <ColorField
           label="Accent (CTAs, highlights)"
           value={theme.accent}
@@ -203,5 +205,72 @@ function ColorField({
         />
       </div>
     </Field>
+  );
+}
+
+/**
+ * Shows what Mode actually does, using the same resolver the site renders
+ * with. Without this the control looked inert even once it worked, because
+ * nothing on the admin page changed when you flipped it.
+ */
+function ThemePreview({ theme }: { theme: ThemeConfig }) {
+  const palette =
+    PALETTES.find((p) => p.id === theme.preset) ?? PALETTES[0];
+  const mode = theme.mode === "light" ? "light" : "dark";
+  const s = resolveSurfaces(palette, mode);
+  const accent = theme.accent || palette.accent;
+
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium text-zinc-400">
+        Preview — this is the storefront in {mode} mode
+      </p>
+      <div
+        className="rounded-xl border p-5"
+        style={{ background: s.background, borderColor: s.border }}
+      >
+        <p
+          className="text-xs font-bold uppercase tracking-widest"
+          style={{ color: accent }}
+        >
+          Eyebrow
+        </p>
+        <p
+          className="mt-1 text-xl font-bold"
+          style={{ color: s.foreground, fontFamily: `'${theme.font_display}', sans-serif` }}
+        >
+          Turn checkout into reviews
+        </p>
+        <p
+          className="mt-1 text-sm"
+          style={{ color: s.mutedFg, fontFamily: `'${theme.font_body}', sans-serif` }}
+        >
+          Body copy sits at this contrast against the page.
+        </p>
+        <div className="mt-4 flex items-center gap-3">
+          <span
+            className="rounded-full px-4 py-2 text-sm font-bold"
+            style={{
+              background: accent,
+              color: "#fff",
+              borderRadius: `${theme.radius}rem`,
+            }}
+          >
+            Shop stands
+          </span>
+          <span
+            className="rounded-full border px-4 py-2 text-sm"
+            style={{
+              borderColor: s.border,
+              color: s.foreground,
+              background: s.card,
+              borderRadius: `${theme.radius}rem`,
+            }}
+          >
+            Card surface
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

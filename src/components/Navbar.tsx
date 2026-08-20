@@ -4,7 +4,7 @@ import { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { ChevronDown, Leaf, Menu, X, ShoppingBag, Search } from "lucide-react";
+import { ChevronDown, Wifi, Menu, X, ShoppingBag, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "./CartContext";
 import { useSettings } from "./SettingsProvider";
@@ -85,17 +85,21 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
           className="flex min-w-0 items-center gap-2 font-display text-xl font-bold text-foreground"
         >
           {logoSrc ? (
+            // width/height here only give Next the intrinsic ratio; the real
+            // size comes from the height style, so a wide wordmark is not
+            // squashed into a square the way a square icon would be.
             <Image
               src={logoImageUrl!}
               alt={storeName}
-              width={logoSize}
+              width={logoSize * 5}
               height={logoSize}
               unoptimized={isStorageImageUrl(logoImageUrl)}
-              className="max-h-12 object-contain"
+              className="w-auto object-contain"
+              style={{ height: logoSize }}
               priority
             />
           ) : (
-            <Leaf className="h-6 w-6 text-white" aria-hidden="true" />
+            <Wifi className="h-6 w-6 text-accent" aria-hidden="true" />
           )}
           <span className={logoSrc ? "sr-only" : "truncate"}>{storeName}</span>
         </Link>
