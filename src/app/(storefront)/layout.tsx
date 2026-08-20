@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 import { MapPin, Phone } from "lucide-react";
 import { getSiteSettings } from "@/lib/settings";
-import { getBrands, getCategories, getProducts } from "@/lib/data";
+import {
+  getActiveStands,
+  getStandTypes,
+  getBusinessUses,
+  getBusinessUseCounts,
+} from "@/lib/stands-data";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { CartProvider } from "@/components/CartContext";
 import { Navbar } from "@/components/Navbar";
@@ -11,8 +16,6 @@ import { StoreJsonLd } from "@/components/StoreJsonLd";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { MobileStickyActions } from "@/components/MobileStickyActions";
 import { DEFAULTS } from "@/lib/defaults";
-import { getAvailableFeelings, getAvailableStrains, getProductFeelings } from "@/lib/product-facets";
-import { categoryPath } from "@/lib/url";
 import type { ShopNavData } from "@/components/Navbar";
 
 export const dynamic = "force-dynamic";
@@ -53,54 +56,32 @@ export default async function StorefrontLayout({
     );
   }
 
-  const [categories, brands, products] = await Promise.all([
-    getCategories(),
-    getBrands(),
-    getProducts({ inStockOnly: true }),
+  const [stands, standTypes, businessUses, useCounts] = await Promise.all([
+    getActiveStands(),
+    getStandTypes(),
+    getBusinessUses(),
+    getBusinessUseCounts(),
   ]);
 
-  const productCountByCategory = new Map<string, number>();
-  const productCountByBrand = new Map<number, number>();
-  for (const product of products) {
-    productCountByCategory.set(
-      product.category,
-      (productCountByCategory.get(product.category) ?? 0) + 1
-    );
-    if (product.brandId) {
-      productCountByBrand.set(
-        product.brandId,
-        (productCountByBrand.get(product.brandId) ?? 0) + 1
-      );
-    }
-  }
-
+  // The nav is built from tagged relationships, so a stand is never listed twice.
   const shopNav: ShopNavData = {
-    categories: categories
-      .map((category) => ({
-        name: category.name,
-        href: categoryPath(category.name),
-        count: productCountByCategory.get(category.name) ?? 0,
+    standTypes: standTypes
+      .map((type) => ({
+        name: type.name,
+        href: `/shop?type=${type.slug}`,
+        count: stands.filter((s) => s.standType?.slug === type.slug).length,
       }))
-      .filter((item) => item.count > 0)
-      .slice(0, 8),
-    brands: brands
-      .map((brand) => ({
-        name: brand.name,
-        href: `/shop?brand=${brand.id}`,
-        count: productCountByBrand.get(brand.id) ?? 0,
+      .filter((item) => item.count > 0),
+    businessUses: businessUses
+      .map((use) => ({
+        name: use.name,
+        href: `/shop?use=${use.slug}`,
+        count: useCounts[use.slug] ?? 0,
       }))
-      .filter((item) => item.count > 0)
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-      .slice(0, 8),
-    strains: getAvailableStrains(products).map((strain) => ({
-      name: strain,
-      href: `/shop?strain=${encodeURIComponent(strain)}`,
-      count: products.filter((product) => product.strain === strain).length,
-    })),
-    feelings: getAvailableFeelings(products).map((feeling) => ({
-      name: feeling,
-      href: `/shop?effect=${encodeURIComponent(feeling)}`,
-      count: products.filter((product) => getProductFeelings(product).includes(feeling)).length,
+      .filter((item) => item.count > 0),
+    popular: stands.slice(0, 6).map((s) => ({
+      name: s.stand.name,
+      href: `/stands/${s.stand.slug}`,
     })),
   };
 

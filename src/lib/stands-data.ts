@@ -177,3 +177,38 @@ export async function getStandBySlug(
     return null;
   }
 }
+
+/**
+ * Active-stand counts per business use, keyed by use slug.
+ * Used by the nav so "By business" shows real numbers instead of zeros.
+ */
+export const getBusinessUseCounts = cache(
+  async (): Promise<Record<string, number>> => {
+    try {
+      const active = await getActiveStands();
+      const activeIds = new Set(active.map((s) => s.stand.id));
+      if (activeIds.size === 0) return {};
+
+      const rows = await db
+        .select({
+          slug: businessUsesTable.slug,
+          standId: standBusinessUsesTable.standId,
+        })
+        .from(standBusinessUsesTable)
+        .innerJoin(
+          businessUsesTable,
+          eq(businessUsesTable.id, standBusinessUsesTable.businessUseId)
+        );
+
+      const counts: Record<string, number> = {};
+      for (const row of rows) {
+        if (!activeIds.has(row.standId)) continue;
+        counts[row.slug] = (counts[row.slug] ?? 0) + 1;
+      }
+      return counts;
+    } catch (err) {
+      console.error("[stands] getBusinessUseCounts failed:", err);
+      return {};
+    }
+  }
+);

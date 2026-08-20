@@ -33,10 +33,9 @@ type ShopNavItem = {
 };
 
 export interface ShopNavData {
-  categories: ShopNavItem[];
-  brands: ShopNavItem[];
-  strains: ShopNavItem[];
-  feelings: ShopNavItem[];
+  standTypes: ShopNavItem[];
+  businessUses: ShopNavItem[];
+  popular: ShopNavItem[];
 }
 
 export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
@@ -54,10 +53,6 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
     : settings.store?.logo_light;
   const logoImageUrl = logoUrl(logoSrc);
   const storeName = settings.store?.name || DEFAULTS.storeName;
-  const megaImageUrl =
-    logoUrl(settings.homepage_sections?.hero?.bannerImageUrl) ??
-    "/images/store/storefront-interior.webp";
-
   const headerCfg = settings.header_config;
   const showCta = headerCfg?.show_cta ?? false;
   const ctaText = headerCfg?.cta_text || "Order Now";
@@ -76,10 +71,7 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
     pathname.startsWith("/blog") || pathname.startsWith("/faqs");
   const hasShopMenu =
     !!shopNav &&
-    (shopNav.categories.length > 0 ||
-      shopNav.brands.length > 0 ||
-      shopNav.strains.length > 0 ||
-      shopNav.feelings.length > 0);
+    (shopNav.standTypes.length > 0 || shopNav.businessUses.length > 0);
 
   return (
     <header
@@ -115,9 +107,10 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
               setResourcesMenuOpen(false);
             }}
           >
-            <button
-              type="button"
-              onClick={() => setShopMenuOpen((open) => !open)}
+            <Link
+              href="/shop"
+              onFocus={() => setShopMenuOpen(true)}
+              onClick={() => setShopMenuOpen(false)}
               className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-bold transition-colors hover:border-accent/60 hover:text-accent ${
                 isShopActive
                   ? "border-accent/50 bg-accent/10 text-accent"
@@ -131,7 +124,7 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
                 className={`h-4 w-4 transition-transform ${shopMenuOpen ? "rotate-180" : ""}`}
                 aria-hidden="true"
               />
-            </button>
+            </Link>
           </div>
           {navLinks.map((link) => {
             const isActive = pathname === link.path;
@@ -197,7 +190,7 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
           </Link>
 
           <Link
-            href="/checkout"
+            href="/cart"
             aria-label={`Cart, ${totalItems} items`}
             className="relative inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/70 bg-card/70 px-3 text-sm font-bold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
           >
@@ -237,34 +230,30 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
             className="absolute left-1/2 top-full hidden w-[min(1040px,calc(100vw-2rem))] -translate-x-1/2 pt-2 md:block"
           >
             <div className="rounded-lg border border-border bg-background/95 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl">
-              <div className="grid grid-cols-[1.25fr_1fr_1fr_1fr] gap-6">
+              <div className="grid grid-cols-[1.15fr_1fr_1fr] gap-6">
                 <div>
                   <Link
                     href="/shop"
                     onClick={() => setShopMenuOpen(false)}
-                    className="group relative mb-4 block h-36 overflow-hidden rounded-md border border-border/70 bg-card transition-colors hover:border-accent"
+                    className="group mb-4 block rounded-lg border border-border bg-card p-4 transition-colors hover:border-accent"
                   >
-                    <Image
-                      src={megaImageUrl}
-                      alt=""
-                      fill
-                      sizes="280px"
-                      unoptimized={isStorageImageUrl(megaImageUrl)}
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <p className="font-bold text-white">Shop all products</p>
-                      <p className="mt-1 text-sm text-white/75">
-                        Browse the full menu with filters.
-                      </p>
-                    </div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-accent">
+                      Shop all stands
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">
+                      Every stand, filterable by what you want people to do.
+                    </p>
+                    <p className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-accent">
+                      Browse the catalog
+                      <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
+                        &rarr;
+                      </span>
+                    </p>
                   </Link>
-                  <MenuGroup title="Categories" items={shopNav?.categories ?? []} onClick={() => setShopMenuOpen(false)} />
+                  <MenuGroup title="By stand type" items={shopNav?.standTypes ?? []} onClick={() => setShopMenuOpen(false)} />
                 </div>
-                <MenuGroup title="Brands" items={shopNav?.brands ?? []} onClick={() => setShopMenuOpen(false)} />
-                <MenuGroup title="Product Types" items={shopNav?.strains ?? []} onClick={() => setShopMenuOpen(false)} />
-                <MenuGroup title="Shop by Feel" items={shopNav?.feelings ?? []} onClick={() => setShopMenuOpen(false)} />
+                <MenuGroup title="By business" items={shopNav?.businessUses ?? []} onClick={() => setShopMenuOpen(false)} />
+                <MenuGroup title="Popular" items={shopNav?.popular ?? []} onClick={() => setShopMenuOpen(false)} />
               </div>
             </div>
           </motion.div>
@@ -323,10 +312,10 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
               </Link>
               {hasShopMenu && (
                 <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border bg-card/50 p-4">
-                  <MobileMenuGroup title="Categories" items={shopNav?.categories ?? []} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileMenuGroup title="Brands" items={shopNav?.brands ?? []} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileMenuGroup title="Product Types" items={shopNav?.strains ?? []} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileMenuGroup title="Features" items={shopNav?.feelings ?? []} onClick={() => setMobileMenuOpen(false)} />
+                  <MobileMenuGroup title="By stand type" items={shopNav?.standTypes ?? []} onClick={() => setMobileMenuOpen(false)} />
+                  <MobileMenuGroup title="By business" items={shopNav?.businessUses ?? []} onClick={() => setMobileMenuOpen(false)} />
+                  <MobileMenuGroup title="Popular" items={shopNav?.popular ?? []} onClick={() => setMobileMenuOpen(false)} />
+
                 </div>
               )}
               {navLinks.map((link) => (
@@ -376,6 +365,7 @@ function MenuGroup({
   items: ShopNavItem[];
   onClick: () => void;
 }) {
+  if (items.length === 0) return null;
   return (
     <div>
       <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
