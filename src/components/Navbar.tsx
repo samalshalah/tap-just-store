@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "./CartContext";
 import { useSettings } from "./SettingsProvider";
 import { DEFAULTS } from "@/lib/defaults";
-import { isStorageImageUrl } from "@/lib/images";
+import { isStorageImageUrl, logoUrl } from "@/lib/images";
 
 const DEFAULT_NAV_LINKS = [
   { name: "How It Works", path: "/how-it-works" },
@@ -52,11 +52,11 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
   const logoSrc = isLightTheme
     ? settings.store?.logo_dark || settings.store?.logo_light
     : settings.store?.logo_light;
-  const logoImageUrl = logoSrc ? `/api/storage${logoSrc}` : null;
+  const logoImageUrl = logoUrl(logoSrc);
   const storeName = settings.store?.name || DEFAULTS.storeName;
-  const megaImageUrl = settings.homepage_sections?.hero?.bannerImageUrl
-    ? `/api/storage${settings.homepage_sections.hero.bannerImageUrl}`
-    : "/images/store/storefront-interior.webp";
+  const megaImageUrl =
+    logoUrl(settings.homepage_sections?.hero?.bannerImageUrl) ??
+    "/images/store/storefront-interior.webp";
 
   const headerCfg = settings.header_config;
   const showCta = headerCfg?.show_cta ?? false;

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "./SettingsProvider";
 import { DEFAULTS } from "@/lib/defaults";
-import { isStorageImageUrl } from "@/lib/images";
+import { isStorageImageUrl, logoUrl } from "@/lib/images";
 import type { WeekDay } from "@/lib/types";
 
 const DAY_LABELS: Record<WeekDay, string> = {
@@ -52,7 +52,7 @@ export function Footer() {
   const logoSrc = isLightTheme
     ? settings.store?.logo_dark || settings.store?.logo_light
     : settings.store?.logo_light;
-  const logoImageUrl = logoSrc ? `/api/storage${logoSrc}` : null;
+  const logoImageUrl = logoUrl(logoSrc);
 
   const address = settings.location?.address || settings.store?.address;
   const city = settings.location?.city;
