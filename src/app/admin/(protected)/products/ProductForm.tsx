@@ -12,6 +12,7 @@ import {
 import type { Product, Category, Brand } from "@/lib/data";
 import { AdminImageUploader } from "@/components/AdminImageUploader";
 import { Field, Input, Textarea, Select, Checkbox } from "@/components/AdminFormControls";
+import { centsToInput, dollarsToCents } from "@/lib/money";
 
 interface Props {
   categories: Category[];
@@ -23,17 +24,15 @@ type FormShape = {
   name: string;
   category: string;
   brandId: string;
-  strain: string;
-  thc: string;
-  cbd: string;
   price: string;
   salePrice: string;
   description: string;
   imageType: string;
   imageUrl: string;
-  effects: string;
-  terpenes: string;
-  flavors: string;
+  material: string;
+  chipType: string;
+  dimensions: string;
+  mountType: string;
   weight: string;
   sku: string;
   quantity: string;
@@ -78,17 +77,15 @@ export function ProductForm({ categories, brands, product }: Props) {
       name: product?.name ?? "",
       category: product?.category ?? categories[0]?.name ?? "Flower",
       brandId: product?.brandId?.toString() ?? "",
-      strain: product?.strain ?? "Hybrid",
-      thc: product?.thc ?? "",
-      cbd: product?.cbd ?? "0%",
-      price: product?.price?.toString() ?? "",
-      salePrice: product?.salePrice?.toString() ?? "",
+      material: product?.material ?? "",
+      chipType: product?.chipType ?? "",
+      dimensions: product?.dimensions ?? "",
+      mountType: product?.mountType ?? "",
+      price: centsToInput(product?.price) ?? "",
+      salePrice: centsToInput(product?.salePrice) ?? "",
       description: product?.description ?? "",
       imageType: product?.imageType ?? "flower",
       imageUrl: product?.imageUrl ?? "",
-      effects: fromList(product?.effects),
-      terpenes: fromList(product?.terpenes),
-      flavors: fromList(product?.flavors),
       weight: product?.weight ?? "",
       sku: product?.sku ?? "",
       quantity: product?.quantity?.toString() ?? "",
@@ -105,17 +102,15 @@ export function ProductForm({ categories, brands, product }: Props) {
       name: values.name.trim(),
       category: values.category,
       brandId: values.brandId ? parseInt(values.brandId, 10) : null,
-      strain: values.strain,
-      thc: values.thc,
-      cbd: values.cbd || "0%",
-      price: parseInt(values.price, 10),
-      salePrice: values.salePrice ? parseInt(values.salePrice, 10) : null,
+      material: values.material.trim(),
+      chipType: values.chipType.trim(),
+      dimensions: values.dimensions.trim(),
+      mountType: values.mountType.trim(),
+      price: dollarsToCents(values.price),
+      salePrice: values.salePrice ? dollarsToCents(values.salePrice) : null,
       description: values.description.trim(),
       imageType: values.imageType || "flower",
       imageUrl: imageUrl || null,
-      effects: strList(values.effects),
-      terpenes: strList(values.terpenes),
-      flavors: strList(values.flavors),
       weight: values.weight,
       sku: values.sku || null,
       quantity: values.quantity ? parseInt(values.quantity, 10) : null,
@@ -152,9 +147,6 @@ export function ProductForm({ categories, brands, product }: Props) {
       const text = await previewSeoDescription({
         name: v.name,
         category: v.category,
-        strainType: v.strain,
-        thc: v.thc,
-        cbd: v.cbd,
         brand: brandName,
       });
       setValue("description", text, { shouldDirty: true });
@@ -200,15 +192,6 @@ export function ProductForm({ categories, brands, product }: Props) {
             </Select>
           </Field>
         </div>
-        <Field label="Strain">
-          <Select {...register("strain")}>
-            {["Indica", "Sativa", "Hybrid", "CBD"].map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </Select>
-        </Field>
         <Field label="Description">
           <div>
             <Textarea rows={4} {...register("description", { required: true })} />
@@ -236,6 +219,8 @@ export function ProductForm({ categories, brands, product }: Props) {
             <Input
               type="number"
               min={0}
+              step="0.01"
+              placeholder="39.99"
               {...register("price", {
                 required: "Required",
                 valueAsNumber: false,
@@ -243,7 +228,7 @@ export function ProductForm({ categories, brands, product }: Props) {
             />
           </Field>
           <Field label="Sale price ($, optional)">
-            <Input type="number" min={0} {...register("salePrice")} />
+            <Input type="number" min={0} step="0.01" placeholder="34.99" {...register("salePrice")} />
           </Field>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -265,28 +250,27 @@ export function ProductForm({ categories, brands, product }: Props) {
 
       <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
         <h2 className="font-semibold text-zinc-200">Specs</h2>
+        <p className="text-xs text-zinc-500">
+          Shown on the product page. Leave blank to hide a row.
+        </p>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="THC">
-            <Input {...register("thc")} placeholder="e.g. 22%" />
+          <Field label="Material">
+            <Input {...register("material")} placeholder="Brushed aluminium" />
           </Field>
-          <Field label="CBD">
-            <Input {...register("cbd")} placeholder="e.g. 1%" />
+          <Field label="NFC chip">
+            <Input {...register("chipType")} placeholder="NTAG215" />
           </Field>
         </div>
-        <Field label="Effects (comma-separated)">
-          <Input
-            {...register("effects")}
-            placeholder="Relaxing, Happy, Creative"
-          />
-        </Field>
-        <Field label="Terpenes (comma-separated)">
-          <Input {...register("terpenes")} placeholder="Myrcene, Limonene" />
-        </Field>
-        <Field label="Flavors (comma-separated)">
-          <Input {...register("flavors")} placeholder="Citrus, Pine" />
-        </Field>
-        <Field label="Weight (free-form, e.g. '3.5g')">
-          <Input {...register("weight")} />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Dimensions">
+            <Input {...register("dimensions")} placeholder="85 x 55 x 12 mm" />
+          </Field>
+          <Field label="Mounting">
+            <Input {...register("mountType")} placeholder="Countertop stand" />
+          </Field>
+        </div>
+        <Field label="Weight">
+          <Input {...register("weight")} placeholder="120 g" />
         </Field>
       </section>
 

@@ -58,8 +58,9 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#039;");
 }
 
-function money(value: number): string {
-  return `$${value.toFixed(2).replace(/\.00$/, "")}`;
+/** Amounts are stored as integer cents; render them as dollars. */
+function money(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
 function normalizeEmail(value: string | null | undefined): string | null {

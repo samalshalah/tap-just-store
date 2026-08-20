@@ -19,6 +19,7 @@ import { DEFAULTS } from "@/lib/defaults";
 import { toast } from "sonner";
 import type { Product } from "@/lib/data";
 import type { DealRule } from "@/lib/types";
+import { formatMoney } from "@/lib/money";
 
 interface ProductCardProps {
   product: Product;
@@ -284,11 +285,11 @@ export function ProductCard({
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Price</span>
           {showSaleBadge && product.salePrice ? (
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-accent">${product.salePrice}</span>
-              <span className="text-sm text-foreground/40 line-through">${product.price}</span>
+              <span className="text-lg font-bold text-accent">{formatMoney(product.salePrice)}</span>
+              <span className="text-sm text-foreground/40 line-through">{formatMoney(product.price)}</span>
             </div>
           ) : (
-            <span className="text-lg font-bold text-foreground">${product.price}</span>
+            <span className="text-lg font-bold text-foreground">{formatMoney(product.price)}</span>
           )}
         </div>
         <button

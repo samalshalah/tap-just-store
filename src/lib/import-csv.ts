@@ -212,7 +212,8 @@ export function parseInventoryCsv(text: string): ParseResult {
       errors.push({ row: i + 1, message: `Row ${i + 1} (SKU ${sku}): missing name` });
       continue;
     }
-    const price = Math.round(parseFloat(priceStr) || 0);
+    // CSV sheets are authored in dollars; the database stores cents.
+    const price = Math.round((parseFloat(priceStr) || 0) * 100);
     if (price <= 0) {
       errors.push({
         row: i + 1,

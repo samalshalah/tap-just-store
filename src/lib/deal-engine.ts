@@ -7,6 +7,18 @@
  */
 
 import type { DealRule } from "./types";
+import { dollarsToCents } from "./money";
+
+/**
+ * Deal rules are authored in the admin in whole dollars, while cart amounts
+ * are integer cents. Convert at the boundary so the two never mix.
+ */
+function flatDiscountCents(deal: DealRule): number {
+  return dollarsToCents(deal.discountValue ?? 0);
+}
+function thresholdCents(deal: DealRule): number {
+  return dollarsToCents(deal.threshold ?? 0);
+}
 
 interface CartItemForDeals {
   productId: number;
@@ -39,15 +51,15 @@ export function computeBestDeal(
         if (deal.discountType === "percent") {
           discount = subtotal * ((deal.discountValue ?? 0) / 100);
         } else {
-          discount = Math.min(deal.discountValue ?? 0, subtotal);
+          discount = Math.min(flatDiscountCents(deal), subtotal);
         }
         break;
       }
       case "spend_threshold": {
-        if (deal.threshold && subtotal >= deal.threshold) {
+        if (deal.threshold && subtotal >= thresholdCents(deal)) {
           discount =
             deal.discountType === "flat"
-              ? Math.min(deal.discountValue ?? 0, subtotal)
+              ? Math.min(flatDiscountCents(deal), subtotal)
               : subtotal * ((deal.discountValue ?? 0) / 100);
         }
         break;
@@ -56,7 +68,7 @@ export function computeBestDeal(
         if (deal.days?.includes(today)) {
           discount =
             deal.discountType === "flat"
-              ? Math.min(deal.discountValue ?? 0, subtotal)
+              ? Math.min(flatDiscountCents(deal), subtotal)
               : subtotal * ((deal.discountValue ?? 0) / 100);
         }
         break;

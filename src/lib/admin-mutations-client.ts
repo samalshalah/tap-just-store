@@ -5,8 +5,9 @@ export interface ProductInput {
   name: string;
   category: string;
   brandId?: number | null;
-  strain: string;
-  thc: string;
+  /** Legacy cannabis-template fields; optional and unused by the admin UI. */
+  strain?: string;
+  thc?: string;
   cbd?: string;
   price: number;
   salePrice?: number | null;
@@ -17,6 +18,10 @@ export interface ProductInput {
   terpenes?: string;
   flavors?: string;
   weight?: string;
+  material?: string;
+  chipType?: string;
+  dimensions?: string;
+  mountType?: string;
   featured?: boolean;
   inStock?: boolean;
   sku?: string | null;
@@ -167,7 +172,8 @@ export function bulkRegenerateDescriptions(ids: number[]) {
 export function previewSeoDescription(input: {
   name: string;
   category: string;
-  strainType: string;
+  /** Legacy field; the admin no longer sends it. */
+  strainType?: string;
   strainName?: string;
   thc?: string;
   cbd?: string;
@@ -179,7 +185,8 @@ export function previewSeoDescription(input: {
 export function previewSeoTitle(input: {
   name: string;
   category: string;
-  strainType: string;
+  /** Legacy field; the admin no longer sends it. */
+  strainType?: string;
   thc?: string;
   brand?: string;
 }) {

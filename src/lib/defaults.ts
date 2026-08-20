@@ -57,7 +57,7 @@ export const DEFAULTS = {
 
   // --- Order confirmation prefix ---
   // Each storefront should change this. Format: e.g. "WL-AB12CD"
-  confirmationCodePrefix: "WL-",
+  confirmationCodePrefix: "TJ-",
 } as const;
 
 export type Defaults = typeof DEFAULTS;

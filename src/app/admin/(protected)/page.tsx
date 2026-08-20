@@ -5,6 +5,7 @@ import { db, productsTable, ordersTable, siteSettingsTable } from "@/lib/db";
 import { isLocalPreviewMode } from "@/lib/preview";
 import { getSiteSettings } from "@/lib/settings";
 import type { SiteSettings } from "@/lib/types";
+import { formatMoney } from "@/lib/money";
 
 async function getDashboardStats() {
   if (isLocalPreviewMode()) {
@@ -85,7 +86,7 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         <Card label="Today's Orders" value={stats.todayOrders} />
-        <Card label="Today's Revenue" value={`$${stats.todayRevenue}`} />
+        <Card label="Today's Revenue" value={formatMoney(stats.todayRevenue)} />
         <Card label="Pending Orders" value={stats.pendingOrders} />
         <Card label="Active Products" value={stats.productCount} />
       </div>

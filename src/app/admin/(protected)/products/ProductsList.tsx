@@ -28,6 +28,7 @@ import {
   deleteProduct,
 } from "@/lib/admin-mutations-client";
 import type { Product } from "@/lib/data";
+import { formatMoney } from "@/lib/money";
 
 type BulkMode =
   | { kind: "discount" }
@@ -386,8 +387,8 @@ export function ProductsList({ products }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
                   <p className="text-sm text-zinc-500">
-                    {p.category} · {p.strain} · ${p.price}
-                    {p.salePrice ? ` (sale $${p.salePrice})` : ""}
+                    {p.category} · {formatMoney(p.price)}
+                    {p.salePrice ? ` (sale ${formatMoney(p.salePrice)})` : ""}
                     {p.quantity != null && ` · qty ${p.quantity}`}
                   </p>
                 </div>

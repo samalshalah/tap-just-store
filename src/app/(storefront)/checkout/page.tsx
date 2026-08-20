@@ -3,6 +3,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { CheckoutClient } from "@/components/CheckoutClient";
 import { DEFAULTS } from "@/lib/defaults";
 import { checkoutTermsText, complianceFooterText } from "@/lib/compliance";
+import { dollarsToCents } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -25,7 +26,7 @@ export default async function CheckoutPage() {
         showNotes: cc.order_notes ?? true,
         showTerms: cc.terms_required ?? true,
         termsText: cc.terms_text ?? checkoutTermsText(settings),
-        minOrder: cc.min_order_amount ?? 0,
+        minOrder: dollarsToCents(cc.min_order_amount ?? 0),
         tipEnabled: cc.tipping_enabled ?? false,
         tipPresets: cc.tip_presets ?? [10, 15, 20],
         cashOnlyNotice: DEFAULTS.cashOnlyNotice,

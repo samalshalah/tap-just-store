@@ -47,6 +47,18 @@ const Body = z.object({
     .max(50),
 });
 
+/**
+ * The price actually charged for one unit: the sale price when it is set and
+ * genuinely lower than the list price, otherwise the list price. Amounts are
+ * integer cents.
+ */
+function effectiveUnitPrice(product: { price: number; salePrice: number | null }): number {
+  if (product.salePrice != null && product.salePrice > 0 && product.salePrice < product.price) {
+    return product.salePrice;
+  }
+  return product.price;
+}
+
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function generateConfirmationCode(): string {
@@ -109,10 +121,14 @@ export async function POST(req: Request) {
           `Not enough stock for ${product.name}: only ${product.quantity} available.`
         );
       }
+      // The customer is shown salePrice when it is set and lower than the
+      // list price; charge that, not the list price.
+      const unitPrice = effectiveUnitPrice(product);
       return {
         product,
         item,
-        lineTotal: product.price * item.quantity,
+        unitPrice,
+        lineTotal: unitPrice * item.quantity,
       };
     });
 
@@ -124,7 +140,7 @@ export async function POST(req: Request) {
       enabledDeals,
       data.items.map((i) => {
         const p = productMap.get(i.productId)!;
-        return { productId: i.productId, price: p.price, quantity: i.quantity };
+        return { productId: i.productId, price: effectiveUnitPrice(p), quantity: i.quantity };
       }),
       subtotal
     );
@@ -165,7 +181,7 @@ export async function POST(req: Request) {
         .returning();
 
       const orderItems = await Promise.all(
-        itemDetails.map(({ product, item }) =>
+        itemDetails.map(({ product, item, unitPrice }) =>
           tx
             .insert(orderItemsTable)
             .values({
@@ -173,7 +189,7 @@ export async function POST(req: Request) {
               productId: item.productId,
               productName: product.name,
               quantity: item.quantity,
-              pricePerItem: product.price,
+              pricePerItem: unitPrice,
             })
             .returning()
             .then((rows) => rows[0])

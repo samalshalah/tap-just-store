@@ -12,7 +12,8 @@ import type { StrainType } from "./strain-database";
 export interface ProductForSeo {
   name: string;
   category: string;
-  strainType: StrainType;
+  /** Legacy cannabis field; optional. */
+  strainType?: StrainType;
   strainName?: string;
   thc?: string;
   cbd?: string;
@@ -22,6 +23,10 @@ export interface ProductForSeo {
   terpenes?: string[];
   flavors?: string[];
   weight?: string;
+  material?: string;
+  chipType?: string;
+  dimensions?: string;
+  mountType?: string;
   inStock?: boolean;
 }
 
@@ -256,7 +261,7 @@ export function generateSeoDescription(
   const legalModelName = resolveLegalModelName(ctx);
   const display = seoTitleCase(product.name);
   const category = product.category || "Product";
-  const type = product.strainType;
+  const type = product.strainType ?? "Hybrid";
 
   // Legacy spec fields are not surfaced in neutral storefront copy.
   const strainNote = "";
@@ -330,7 +335,7 @@ export function generateProductPageSeoCopy(
   const category = product.category || "product";
   const categoryLower = category.toLowerCase();
   const brand = product.brand ? normalizeAcronyms(titleCase(product.brand)) : "";
-  const type = product.strainType;
+  const type = product.strainType ?? "Hybrid";
   const profile = strainProfile(type);
   const cityState = state ? `${city}, ${state}` : city;
   const sourceDescription = isStaleGeneratedSeoCopy(product.description)
@@ -366,7 +371,11 @@ export function generateProductPageSeoCopy(
     { label: "Product", value: display },
     brand ? { label: "Brand", value: brand } : null,
     { label: "Category", value: category },
-    hasSeoValue(product.weight) ? { label: "Size", value: product.weight } : null,
+    hasSeoValue(product.material) ? { label: "Material", value: product.material! } : null,
+    hasSeoValue(product.chipType) ? { label: "NFC chip", value: product.chipType! } : null,
+    hasSeoValue(product.dimensions) ? { label: "Dimensions", value: product.dimensions! } : null,
+    hasSeoValue(product.mountType) ? { label: "Mounting", value: product.mountType! } : null,
+    hasSeoValue(product.weight) ? { label: "Weight", value: product.weight! } : null,
     {
       label: "Availability",
       value: product.inStock === false ? "Out of stock" : "In stock",

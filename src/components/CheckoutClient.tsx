@@ -28,6 +28,7 @@ import { generatePickupSlots } from "@/lib/pickup-slots";
 import { computeBestDeal } from "@/lib/deal-engine";
 import type { StoreHoursConfig } from "@/lib/types";
 import { toast } from "sonner";
+import { formatMoney } from "@/lib/money";
 
 const checkoutSchema = z.object({
   customerName: z.string().min(2, "Name is required"),
@@ -93,7 +94,7 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
   const onSubmit = async (data: CheckoutForm) => {
     if (items.length === 0) return;
     if (belowMinOrder) {
-      toast.error(`Minimum order is $${config.minOrder}`);
+      toast.error(`Minimum order is ${formatMoney(config.minOrder)}`);
       return;
     }
     if (config.showTerms && !termsChecked) {
@@ -224,7 +225,7 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
                           {item.name}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          ${item.price} each
+                          {formatMoney(item.price)} each
                         </p>
                       </div>
                       <div className="inline-flex items-center bg-background border border-border rounded-lg overflow-hidden">
@@ -269,7 +270,7 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
               <div className="bg-card rounded-2xl border border-border/50 p-5 space-y-2">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>{formatMoney(totalPrice)}</span>
                 </div>
                 {discount > 0 && bestDeal && (
                   <div className="flex justify-between items-center text-sm">
@@ -465,8 +466,8 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
                   {belowMinOrder && (
                     <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
-                      Minimum order is ${config.minOrder}. Add $
-                      {(config.minOrder - finalTotal).toFixed(2)} more.
+                      Minimum order is {formatMoney(config.minOrder)}. Add{" "}
+                      {formatMoney(config.minOrder - finalTotal)} more.
                     </div>
                   )}
 

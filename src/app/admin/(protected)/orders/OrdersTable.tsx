@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { setOrderStatus } from "@/lib/admin-mutations-client";
 import type { Order, OrderItem } from "@/lib/data";
+import { formatMoney } from "@/lib/money";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-900/30 text-amber-300 border-amber-800",
@@ -81,7 +82,7 @@ export function OrdersTable({ orders }: Props) {
                 {o.preferredPickupTime}
               </div>
               <div className="font-bold text-amber-500 whitespace-nowrap">
-                ${o.totalPrice}
+                {formatMoney(o.totalPrice)}
               </div>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-xs border whitespace-nowrap ${

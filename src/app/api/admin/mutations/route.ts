@@ -17,6 +17,7 @@ import {
   seoTitleCase,
 } from "@/lib/seo-generator";
 import type { StrainType } from "@/lib/strain-database";
+import { dollarsToCents } from "@/lib/money";
 
 const COOKIE_NAME = "jc_admin_session";
 const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7;
@@ -310,7 +311,8 @@ async function bulkApplyDiscount(
         .where(inArray(productsTable.id, ids));
     }
   } else if (mode === "flat") {
-    const amount = Math.max(0, Math.round(value ?? 0));
+    // The admin enters this in dollars; the column is cents.
+    const amount = dollarsToCents(value ?? 0);
     if (amount <= 0) throw new Error("Flat sale price must be greater than 0");
     await db
       .update(productsTable)
@@ -438,7 +440,7 @@ async function bulkRegenerateDescriptions(ids: number[]) {
 async function previewSeoDescription(input: {
   name: string;
   category: string;
-  strainType: string;
+  strainType?: string;
   strainName?: string;
   thc?: string;
   cbd?: string;
@@ -450,7 +452,7 @@ async function previewSeoDescription(input: {
     {
       name: input.name,
       category: input.category,
-      strainType: input.strainType as StrainType,
+      strainType: input.strainType as StrainType | undefined,
       strainName: input.strainName,
       thc: input.thc,
       cbd: input.cbd,

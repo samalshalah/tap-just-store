@@ -7,6 +7,7 @@ import type { OrderItem } from "@/lib/schema/orderItems";
 import { getSiteSettings } from "@/lib/settings";
 import { DEFAULTS } from "@/lib/defaults";
 import { complianceFooterText } from "@/lib/compliance";
+import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "Order Confirmed",
@@ -91,7 +92,7 @@ export default async function OrderConfirmationPage({
 
           <div className="flex justify-between items-center pt-4 border-t border-border font-bold">
             <span className="text-foreground">Total</span>
-            <span className="text-2xl text-accent">${order.totalPrice}</span>
+            <span className="text-2xl text-accent">{formatMoney(order.totalPrice)}</span>
           </div>
         </div>
 

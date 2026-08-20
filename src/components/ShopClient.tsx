@@ -13,6 +13,7 @@ import {
   type StrainFilter,
 } from "@/lib/product-facets";
 import { comparePackageSizes } from "@/lib/product-size";
+import { formatMoney } from "@/lib/money";
 
 type SortId = "featured" | "price_asc" | "price_desc" | "name_asc" | "name_desc";
 
@@ -400,8 +401,8 @@ export function ShopClient({
         <FilterGroup title="Price">
           <div className="px-1">
             <div className="flex justify-between text-xs text-muted-foreground mb-2">
-              <span>${minPrice}</span>
-              <span>${maxPrice}</span>
+              <span>{formatMoney(minPrice)}</span>
+              <span>{formatMoney(maxPrice)}</span>
             </div>
             <input
               type="range"

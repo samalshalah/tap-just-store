@@ -19,6 +19,7 @@ import { parseInventoryCsv, titleCase } from "@/lib/import-csv-client";
 import type { ParsedRowClient } from "@/lib/import-csv-client";
 import { inferStrainType, type StrainType } from "@/lib/strain-database";
 import { generateSeoDescription } from "@/lib/seo-generator";
+import { formatMoney } from "@/lib/money";
 
 type Stage = "upload" | "preview" | "running" | "done";
 
@@ -406,7 +407,7 @@ export function ImportClient({ onImported }: ImportClientProps = {}) {
                       {r.brand ? titleCase(r.brand) : "—"}
                     </td>
                     <td className="px-3 py-2 text-right font-mono">
-                      ${r.price}
+                      {formatMoney(r.price)}
                     </td>
                     <td className="px-3 py-2 text-right font-mono">
                       {r.quantity}

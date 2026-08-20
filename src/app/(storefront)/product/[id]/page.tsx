@@ -24,6 +24,7 @@ import {
   seoTitleCase,
 } from "@/lib/seo-generator";
 import type { StrainType } from "@/lib/strain-database";
+import { formatMoney } from "@/lib/money";
 
 function parseJsonArr(s: string | undefined | null): string[] {
   if (!s) return [];
@@ -216,6 +217,10 @@ export default async function ProductDetailPage({
       terpenes,
       flavors,
       weight: product.weight,
+      material: product.material,
+      chipType: product.chipType,
+      dimensions: product.dimensions,
+      mountType: product.mountType,
       inStock: product.inStock,
     },
     seoCtx
@@ -429,15 +434,15 @@ export default async function ProductDetailPage({
                 {product.salePrice ? (
                   <>
                     <span className="text-4xl font-bold text-accent">
-                      ${product.salePrice}
+                      {formatMoney(product.salePrice)}
                     </span>
                     <span className="text-2xl text-foreground/40 line-through">
-                      ${product.price}
+                      {formatMoney(product.price)}
                     </span>
                   </>
                 ) : (
                   <span className="text-4xl font-bold text-accent">
-                    ${product.price}
+                    {formatMoney(product.price)}
                   </span>
                 )}
                 <span className="text-sm text-muted-foreground">
