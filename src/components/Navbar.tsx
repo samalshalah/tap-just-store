@@ -99,7 +99,7 @@ export function Navbar({ shopNav }: { shopNav?: ShopNavData }) {
               width={logoSize}
               height={logoSize}
               unoptimized={isStorageImageUrl(logoImageUrl)}
-              className="max-h-12 object-contain brightness-0 invert"
+              className="max-h-12 object-contain"
               priority
             />
           ) : (

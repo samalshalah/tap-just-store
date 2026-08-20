@@ -27,6 +27,18 @@ export interface Palette {
 
 export const PALETTES: Palette[] = [
   {
+    id: "tap-rater",
+    name: "Tap Rater",
+    mode: "light",
+    accent: "#E08700",
+    primary: "#1A1D21",
+    background: "#FFFFFF",
+    card: "#F7F8FA",
+    foreground: "#16181C",
+    mutedFg: "#646B75",
+    border: "#E3E6EA",
+  },
+  {
     id: "dark-gold",
     name: "Dark Gold",
     mode: "dark",
@@ -136,14 +148,14 @@ export interface ThemeConfig {
 }
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  mode: "dark",
-  preset: "dark-gold",
-  accent: "#c9a84c",
-  primary: "#1a4a28",
-  font_body: "Epilogue",
-  font_display: "Jost",
+  mode: "light",
+  preset: "tap-rater",
+  accent: "#E08700",
+  primary: "#1A1D21",
+  font_body: "Inter",
+  font_display: "Inter",
   radius: 0.75,
-  product_image_gradient: true,
+  product_image_gradient: false,
 };
 
 export const BODY_FONTS = [
@@ -158,6 +170,7 @@ export const BODY_FONTS = [
 ];
 
 export const DISPLAY_FONTS = [
+  "Inter",
   "Jost",
   "Playfair Display",
   "Syne",
