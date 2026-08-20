@@ -11,8 +11,8 @@
 
 export const DEFAULTS = {
   // --- Brand basics ---
-  storeName: "White Label Store",
-  tagline: "Premium products, curated locally.",
+  storeName: "Tap Rater",
+  tagline: "NFC stands for local businesses.",
 
   // --- City / region context (drives local SEO copy) ---
   city: "Your City",
