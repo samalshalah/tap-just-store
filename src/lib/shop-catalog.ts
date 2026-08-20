@@ -6,6 +6,7 @@ import {
   getStandsByBusinessUse,
   getBusinessUseCounts,
   getUseNamesByStandId,
+  catalogLoadFailed,
 } from "./stands-data";
 import { applyShopFilters, type ShopQuery, type ShopResult } from "./shop-filter";
 
@@ -21,6 +22,8 @@ export interface CatalogView {
   useOptions: CatalogFacet[];
   typeName: string | null;
   useName: string | null;
+  /** True when a read failed, so the page can say so instead of showing nothing. */
+  loadFailed: boolean;
 }
 
 /**
@@ -65,5 +68,6 @@ export async function getCatalogView(query: ShopQuery): Promise<CatalogView> {
     useOptions,
     typeName: standTypes.find((t) => t.slug === query.type)?.name ?? null,
     useName: businessUses.find((u) => u.slug === query.use)?.name ?? null,
+    loadFailed: catalogLoadFailed(),
   };
 }

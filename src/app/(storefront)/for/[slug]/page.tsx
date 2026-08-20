@@ -8,6 +8,7 @@ import {
   getActiveStands,
   getStandsByBusinessUse,
   getUseNamesByStandId,
+  catalogLoadFailed,
 } from "@/lib/stands-data";
 import { applyShopFilters, EMPTY_QUERY } from "@/lib/shop-filter";
 import { useCopy } from "@/lib/landing-copy";
@@ -59,7 +60,14 @@ export default async function BusinessUsePage({
 }) {
   const { slug } = await params;
   const data = await load(slug);
-  if (!data) notFound();
+  if (!data) {
+    // A database blip must not turn a real page into a 404 that search
+    // engines then remember. Fail visibly instead.
+    if (catalogLoadFailed()) {
+      throw new Error(`Catalog unavailable while rendering ${slug}`);
+    }
+    notFound();
+  }
 
   const [uses, useCounts, types, all] = await Promise.all([
     getBusinessUses(),

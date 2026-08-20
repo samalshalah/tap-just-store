@@ -7,6 +7,7 @@ import {
   getBusinessUseCounts,
   getActiveStands,
   getUseNamesByStandId,
+  catalogLoadFailed,
 } from "@/lib/stands-data";
 import { applyShopFilters, EMPTY_QUERY } from "@/lib/shop-filter";
 import { typeCopy } from "@/lib/landing-copy";
@@ -64,7 +65,14 @@ export default async function StandTypePage({
 }) {
   const { slug } = await params;
   const data = await load(slug);
-  if (!data) notFound();
+  if (!data) {
+    // A database blip must not turn a real page into a 404 that search
+    // engines then remember. Fail visibly instead.
+    if (catalogLoadFailed()) {
+      throw new Error(`Catalog unavailable while rendering ${slug}`);
+    }
+    notFound();
+  }
 
   const [types, uses, useCounts, all] = await Promise.all([
     getStandTypes(),

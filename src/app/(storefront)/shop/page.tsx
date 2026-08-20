@@ -41,7 +41,7 @@ export default async function ShopPage({
   const query = parseShopQuery(params);
 
   const [view, tiers] = await Promise.all([getCatalogView(query), getVolumeTiers()]);
-  const { results, typeOptions, useOptions, typeName, useName } = view;
+  const { results, typeOptions, useOptions, typeName, useName, loadFailed } = view;
 
   const heading = typeName ?? useName ?? "All stands";
   const firstTier = tiers[0];
@@ -83,7 +83,25 @@ export default async function ShopPage({
         </div>
 
         <div className="mt-6">
-          <StandGrid results={results} />
+          {loadFailed ? (
+            <div className="rounded-2xl border border-border bg-card py-16 text-center">
+              <p className="font-semibold text-foreground">
+                We could not load the catalog just now.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This is our end, not yours. Refresh in a moment, or{" "}
+                <Link
+                  href="/support"
+                  className="font-semibold text-accent hover:underline"
+                >
+                  tell us
+                </Link>{" "}
+                if it keeps happening.
+              </p>
+            </div>
+          ) : (
+            <StandGrid results={results} />
+          )}
         </div>
 
         <p className="mt-12 text-center text-sm text-muted-foreground">

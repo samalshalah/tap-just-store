@@ -34,6 +34,21 @@ export interface StandDetail extends StandListItem {
   businessUses: BusinessUse[];
 }
 
+/**
+ * Set when a catalog read fails.
+ *
+ * The read helpers return an empty list on error so a database blip does not
+ * take the whole site down. That resilience once hid an outage: a missing
+ * column made every query throw and the shop rendered as simply empty. The
+ * flag lets the UI say "we could not load the catalog" instead of "no stands",
+ * which is the difference between a noticed problem and a silent one.
+ */
+let catalogReadFailed = false;
+
+export function catalogLoadFailed(): boolean {
+  return catalogReadFailed;
+}
+
 function lowestPrice(variants: StandVariant[]): number {
   const active = variants.filter((v) => v.active);
   if (active.length === 0) return 0;
@@ -44,6 +59,7 @@ export const getStandTypes = cache(async (): Promise<StandType[]> => {
   try {
     return await db.select().from(standTypesTable).orderBy(asc(standTypesTable.sortOrder));
   } catch (err) {
+    catalogReadFailed = true;
     console.error("[stands] getStandTypes failed:", err);
     return [];
   }
@@ -53,6 +69,7 @@ export const getBusinessUses = cache(async (): Promise<BusinessUse[]> => {
   try {
     return await db.select().from(businessUsesTable).orderBy(asc(businessUsesTable.sortOrder));
   } catch (err) {
+    catalogReadFailed = true;
     console.error("[stands] getBusinessUses failed:", err);
     return [];
   }
@@ -96,6 +113,7 @@ export const getActiveStands = cache(async (): Promise<StandListItem[]> => {
       return { stand, standType, variants: mine, fromCents: lowestPrice(mine) };
     });
   } catch (err) {
+    catalogReadFailed = true;
     console.error("[stands] getActiveStands failed:", err);
     return [];
   }
@@ -126,6 +144,7 @@ export async function getStandsByBusinessUse(useSlug: string): Promise<StandList
     const all = await getActiveStands();
     return all.filter((s) => ids.has(s.stand.id));
   } catch (err) {
+    catalogReadFailed = true;
     console.error("[stands] getStandsByBusinessUse failed:", err);
     return [];
   }
