@@ -1,0 +1,513 @@
+<title>Tap Rater Backend Triage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root {
+    --paper:      #FBFBFC;
+    --surface:    #F2F4F7;
+    --sunk:       #E9ECF1;
+    --ink:        #14171C;
+    --ink-soft:   #4E5561;
+    --ink-faint:  #79808D;
+    --rule:       #E0E4EA;
+    --rule-firm:  #C8CEd8;
+    --brand:      #C77400;
+    --crit:       #A81E14;
+    --crit-bg:    #FBEAE8;
+    --ok:         #14713C;
+    --ok-bg:      #E6F2EA;
+    --dead:       #6B7280;
+    --dead-bg:    #EDEFF2;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0D0F13;
+      --surface:    #171A20;
+      --sunk:       #1E222A;
+      --ink:        #EDEFF3;
+      --ink-soft:   #A7AEBA;
+      --ink-faint:  #7A828F;
+      --rule:       #262B34;
+      --rule-firm:  #39404B;
+      --brand:      #F0A340;
+      --crit:       #FF8177;
+      --crit-bg:    #2E1614;
+      --ok:         #5FD08B;
+      --ok-bg:      #12261A;
+      --dead:       #8B93A0;
+      --dead-bg:    #1C2027;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0D0F13;
+    --surface:    #171A20;
+    --sunk:       #1E222A;
+    --ink:        #EDEFF3;
+    --ink-soft:   #A7AEBA;
+    --ink-faint:  #7A828F;
+    --rule:       #262B34;
+    --rule-firm:  #39404B;
+    --brand:      #F0A340;
+    --crit:       #FF8177;
+    --crit-bg:    #2E1614;
+    --ok:         #5FD08B;
+    --ok-bg:      #12261A;
+    --dead:       #8B93A0;
+    --dead-bg:    #1C2027;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px 96px; }
+  .col  { max-width: 68ch; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 56px 0 22px;
+    margin-bottom: 34px;
+  }
+  .kicker {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--brand);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-weight: 700; font-size: clamp(2rem, 4.4vw, 3.1rem);
+    line-height: 1.03; letter-spacing: -.024em;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.12rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  .byline {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; color: var(--ink-faint);
+    margin-top: 20px; letter-spacing: .01em;
+  }
+
+  /* ---------- verdict ---------- */
+  .verdict {
+    border: 1px solid var(--rule-firm);
+    border-left: 5px solid var(--crit);
+    background: var(--surface);
+    padding: 26px 30px;
+    margin: 0 0 52px;
+  }
+  .verdict h2 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 1.32rem; font-weight: 700; letter-spacing: -.015em;
+    margin: 0 0 10px;
+  }
+  .verdict p { margin: 0 0 12px; max-width: 74ch; }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 60px; }
+  h2.sec {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 1.5rem; font-weight: 700; letter-spacing: -.018em;
+    margin: 0 0 6px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule-firm);
+  }
+  .sec-note { color: var(--ink-faint); font-size: .95rem; margin: 0 0 26px; max-width: 66ch; }
+  h3 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 1.06rem; font-weight: 600; letter-spacing: -.005em;
+    margin: 30px 0 8px;
+  }
+  p { margin: 0 0 14px; }
+
+  code {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: .8em; background: var(--sunk);
+    padding: .12em .38em; border-radius: 3px;
+    color: var(--ink-soft); word-break: break-word;
+  }
+
+  /* ---------- findings table ---------- */
+  .tablewrap { overflow-x: auto; margin: 0 0 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: .93rem; }
+  thead th {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); text-align: left;
+    padding: 0 14px 9px 0; border-bottom: 1px solid var(--rule-firm);
+  }
+  tbody td {
+    padding: 13px 14px 13px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.what { font-family: "Archivo", system-ui, sans-serif; font-weight: 600; font-size: .95rem; }
+  td.where { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; }
+
+  .chip {
+    display: inline-block;
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .09em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px; white-space: nowrap;
+  }
+  .chip.crit { background: var(--crit-bg); color: var(--crit); }
+  .chip.ok   { background: var(--ok-bg);   color: var(--ok); }
+  .chip.dead { background: var(--dead-bg); color: var(--dead); }
+  .chip.fixed { background: var(--ok-bg); color: var(--ok); }
+
+  /* ---------- works list ---------- */
+  ul.plain { list-style: none; padding: 0; margin: 0; }
+  ul.plain > li {
+    padding: 11px 0 11px 26px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    font-size: .97rem;
+  }
+  ul.plain > li:last-child { border-bottom: none; }
+  ul.plain > li::before {
+    content: ""; position: absolute; left: 4px; top: 21px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ok);
+  }
+  ul.plain > li.no::before { background: var(--crit); }
+  ul.plain > li strong {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  /* ---------- phases ---------- */
+  .phase {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 0 24px;
+    padding: 26px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .phase:first-of-type { border-top: 2px solid var(--ink); }
+  .pnum {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 2.1rem; font-weight: 700; line-height: 1;
+    color: var(--brand); letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .phead {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 1.18rem; font-weight: 700; letter-spacing: -.015em;
+    margin: 0 0 4px;
+  }
+  .pmeta {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: .07em;
+    margin: 0 0 12px;
+  }
+  .phase ol { margin: 0; padding-left: 20px; }
+  .phase ol li { margin-bottom: 9px; font-size: .97rem; }
+  .phase ol li:last-child { margin-bottom: 0; }
+  .gate {
+    margin-top: 14px; padding: 11px 14px;
+    background: var(--surface); border-left: 3px solid var(--rule-firm);
+    font-size: .9rem; color: var(--ink-soft);
+  }
+  .gate b { font-family: "Archivo", system-ui, sans-serif; color: var(--ink); }
+
+  /* ---------- decisions ---------- */
+  .decision {
+    border: 1px solid var(--rule);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    background: var(--surface);
+  }
+  .decision h3 { margin: 0 0 6px; font-size: 1rem; }
+  .decision p { margin: 0; font-size: .95rem; color: var(--ink-soft); }
+
+  footer {
+    margin-top: 70px; padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--ink-faint);
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 64px; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+    .pnum { font-size: 1.5rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Tap Rater · Backend Audit</p>
+    <h1>What the back end does, and what it can't do yet</h1>
+    <p class="standfirst">
+      A full read of the admin, the API routes, the data layer and the order path —
+      with the work ranked in the order it has to happen.
+    </p>
+    <p class="byline">17 stands live · 16 active, 1 draft · audit run 21 Aug 2026 against main @ 9c04a57</p>
+  </header>
+
+  <div class="verdict">
+    <h2>The store cannot take an order today</h2>
+    <p>
+      Not "checkout is rough" — there is no path from a product page to a paid order at all.
+      Browsing runs on the new stands model; buying runs on the old dispensary products model;
+      the two were never connected. The Continue button on every stand page is hard-disabled,
+      and the only code that could ever put something in the cart belongs to orphaned components
+      no route imports any more.
+    </p>
+    <p>
+      Even if something reached the cart, there is no payment provider anywhere in the codebase,
+      no shipping address field, and the checkout asks for a <em>pickup window</em>. That is the
+      centre of gravity for everything below.
+    </p>
+    <p>
+      Two unauthenticated holes turned up during the audit. I closed both before writing this —
+      they were live on production and I wasn't willing to leave them open for the length of a report.
+    </p>
+  </div>
+
+  <section>
+    <h2 class="sec">What genuinely works</h2>
+    <p class="sec-note">
+      More than you'd expect. This is a real storefront with a real admin — the gap is
+      concentrated in one place.
+    </p>
+    <ul class="plain">
+      <li><strong>The catalogue model.</strong> Stands, types, business uses and variants are properly normalised. A stand is tagged into categories, never duplicated. Draft stands cannot leak into the shop.</li>
+      <li><strong>The storefront.</strong> Home, shop with search/size/finish/sort, 15 indexable landing pages, product pages, cart maths with volume tiers, legal pages, sitemap, FAQ structured data.</li>
+      <li><strong>Money is in integer cents</strong> end to end in the new code, with one formatter. The old sale-price overcharge bug is fixed.</li>
+      <li><strong>The stands admin</strong> — create, edit, delete, price, tag, upload three images, publish. Plus a shop-categories screen for the landing photos.</li>
+      <li><strong>Theme, settings and branding</strong> are database-driven and applied server-side with no flash of unstyled content.</li>
+      <li><strong>Order confirmation email</strong> is the best-written file in the repo: correct money formatting, HTML escaping, per-recipient error handling.</li>
+      <li><strong>Deploy pipeline.</strong> Push to main → Cloudflare build → live. Schema drift now fails loudly via <code>npm run check:schema</code>.</li>
+      <li class="no"><strong>Nothing can be added to the cart.</strong> <code>StandBuyBox</code>'s CTA is <code>disabled</code>; the two components that call <code>addItem</code> are imported by no route.</li>
+      <li class="no"><strong>No payments, no shipping address, no tax.</strong> Zero integrations — grep for stripe, paypal, square returns nothing.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="sec">Blockers</h2>
+    <p class="sec-note">Nothing ships to a paying customer until these are done.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Status</th><th>Finding</th><th>Where</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="chip fixed">Fixed</span></td>
+            <td class="what">Server Actions were unauthenticated<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">Every export in a <code>"use server"</code> module is POST-able by anyone who knows its id. The importing page is not a gate. <code>createStand</code>, <code>saveStand</code>, <code>deleteStand</code> and <code>saveTaxonomyRow</code> were open on production.</div></td>
+            <td class="where">stands-admin.ts<br>taxonomy-admin.ts</td>
+          </tr>
+          <tr>
+            <td><span class="chip fixed">Fixed</span></td>
+            <td class="what">Order PII was readable by counting<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px"><code>?id=1,2,3…</code> returned customer name, email, phone and notes for every order, with no check. Now needs the confirmation code or an admin session.</div></td>
+            <td class="where">api/orders:259<br>order/[id]</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">Buy path does not exist<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">The cart is keyed by <code>productId</code> and cannot represent size × finish. <code>order_items</code> has a foreign key to the legacy products table. Stands have no way in.</div></td>
+            <td class="where">CartContext:19<br>orderItems.ts:9</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">No payment provider</td>
+            <td class="where">— nothing</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">No shipping address, no rates, no tax<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">Checkout collects a pickup window instead. You sell a physical product that ships.</div></td>
+            <td class="where">CheckoutClient</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">Cart total ≠ order total<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">The cart applies your volume tiers. The server never imports <code>pricing.ts</code>. A customer shown "buy 3, save 15%" would be charged full price.</div></td>
+            <td class="where">api/orders:138</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">Cents rendered as dollars<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">A $39 stand shows as <b>$3900.00</b> at checkout and on the admin order line. The grand total beside it is correct, so the two visibly disagree by 100×.</div></td>
+            <td class="where">CheckoutClient:292<br>OrdersTable:109</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">Tip is charged in the UI and dropped on the server<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">The button says "Place Order — $X" including tip; the POST body never sends it.</div></td>
+            <td class="where">CheckoutClient:78</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Blocker</span></td>
+            <td class="what">Multi-link subscription has no billing<div style="font-weight:400;font-family:'Source Serif 4',serif;color:var(--ink-soft);margin-top:5px">$9.99/month is priced in the variant table and promised in your terms. Nothing charges it, and nothing switches a stand off when it lapses.</div></td>
+            <td class="where">standVariants.ts:18</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Risks that bite later</h2>
+    <p class="sec-note">Not blocking a launch, but each one is a support ticket or an outage waiting for volume.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Area</th><th>Finding</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td class="what">Auth</td><td>One shared password, no rate limiting, no lockout, no logging. The session cookie is <code>HMAC(password, timestamp)</code> — one leaked cookie lets someone brute-force the password offline. Logout only deletes the cookie client-side, so a copied cookie stays valid for seven days.</td><td class="where">admin-auth.ts:29</td></tr>
+          <tr><td class="what">Uploads</td><td>No size cap, no file-type allowlist, and the browser's declared content type is stored and served back on your own domain. An HTML or SVG upload becomes a same-origin script.</td><td class="where">upload-url:60<br>storage.ts:170</td></tr>
+          <tr><td class="what">Stock</td><td>Quantity is read outside the transaction and decremented inside it. Two orders for the last unit both succeed and drive stock negative. There is no <code>CHECK (quantity &gt;= 0)</code>. Separately, cancelling an order does not restock, and the revenue tile counts cancelled orders.</td><td class="where">api/orders:96,200</td></tr>
+          <tr><td class="what">Schema</td><td>Foreign keys, unique constraints, check constraints and indexes exist in the hand-written SQL but not in the Drizzle schema — and <code>db:push</code> generates from the schema, so a push would offer to drop them. No index anywhere; <code>/admin/orders</code> is an unbounded N+1 with no pagination.</td><td class="where">schema/*.ts</td></tr>
+          <tr><td class="what">Abuse</td><td>Contact, newsletter and order creation are all unthrottled, and contact logs the sender's name, email and message body to Cloudflare logs.</td><td class="where">contact:21</td></tr>
+          <tr><td class="what">Database</td><td>Row Level Security is off on all 16 Supabase tables and the app connects with one privileged role. A new connection pool is built per request and never closed.</td><td class="where">db.ts:35</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Dead weight</h2>
+    <p class="sec-note">
+      Roughly a third of the admin manages a catalogue the storefront no longer reads.
+      None of it is dangerous; all of it costs you every time you look for something.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Kind</th><th>What</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip dead">Orphan</span></td><td class="what">~1,500 lines of storefront components — <code>ShopClient</code>, <code>ProductCard</code>, <code>FeaturedCarousel</code>, <code>AddToCartButton</code></td><td>Delete. No route imports them.</td></tr>
+          <tr><td><span class="chip dead">Orphan</span></td><td class="what">Cannabis libraries — strain database, potency, product facets, package sizes, the dispensary CSV importer</td><td>Delete after swapping four <code>StrainType</code> imports for <code>string</code>.</td></tr>
+          <tr><td><span class="chip dead">Dead UI</span></td><td class="what">Analytics IDs, taxes, age gate, Weedmaps/Leafly, per-page SEO overrides, home sections below the hero, the drag-to-reorder control</td><td>Saved to the database, read by nothing. The analytics form even claims the IDs are injected into the head. Remove or wire up.</td></tr>
+          <tr><td><span class="chip dead">Broken</span></td><td class="what">Blog</td><td>Admin CRUD works fully; there is no <code>/blog</code> route. Publishing shows "Published" and links to a 404.</td></tr>
+          <tr><td><span class="chip dead">Wrong</span></td><td class="what">SEO checklist and "regenerate SEO"</td><td>Grades the legacy products, categories and brands. A full stand catalogue scores "missing". The regenerate button rewrites your live meta description into dispensary prose about "local pickup".</td></tr>
+          <tr><td><span class="chip dead">Wrong</span></td><td class="what">17 local-SEO "areas we serve" pages</td><td>Hardcoded DC neighbourhoods, no route, not in the sitemap — and the checklist grades you green for having them.</td></tr>
+          <tr><td><span class="chip dead">Stale</span></td><td class="what">Store hours, pickup slots, Google Business Profile import, onboarding wizard</td><td>All built for a walk-in shop. The GBP import overwrites your store name and footer with "serves {city} with a live menu and simple pickup information".</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">The plan</h2>
+    <p class="sec-note">
+      Five phases. The order is not preference — each one is blocked by the one before it.
+      Sizing assumes we keep working the way we have been.
+    </p>
+
+    <div class="phase">
+      <div class="pnum">01</div>
+      <div>
+        <p class="phead">Harden what's already live</p>
+        <p class="pmeta">Half a day · nothing depends on it, so it can go first</p>
+        <ol>
+          <li>Rate-limit the login and stop logging customer PII from the contact form.</li>
+          <li>Give the session its own secret and a per-session nonce, so a stolen cookie can't be used to crack the admin password. Store the password hashed.</li>
+          <li>Cap upload size, allow only real image types, and set the stored content type from the file rather than the browser's claim.</li>
+          <li>Move the foreign keys, unique constraints and indexes into the Drizzle schema so <code>db:push</code> stops threatening to drop them. Index <code>order_items.order_id</code> and <code>orders.created_at</code> first.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pnum">02</div>
+      <div>
+        <p class="phead">The setup flow</p>
+        <p class="pmeta">The biggest single build · everything downstream waits on it</p>
+        <ol>
+          <li><b>Standard:</b> paste your link → confirm → cart.</li>
+          <li><b>Branded + QR:</b> paste your link → upload logo → business name → we generate a real scannable QR → you approve a proof rendered on the front template → cart.</li>
+          <li>Re-key the cart from <code>productId</code> to <code>standVariantId</code> and carry the setup data — link, logo, business name, approved proof — on the line item.</li>
+          <li>Enable the Continue button. This is the moment the shop becomes a shop.</li>
+        </ol>
+        <div class="gate"><b>Gate:</b> logo and business name are collected <em>before</em> the cart, never "we'll email you later". Proofs use a real generated QR, never a placeholder.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pnum">03</div>
+      <div>
+        <p class="phead">Take money</p>
+        <p class="pmeta">Blocked by 02 · the phase that makes the business real</p>
+        <ol>
+          <li>Repoint <code>order_items</code> at <code>stand_variants</code>, keeping the name and price snapshot so history survives a catalogue edit.</li>
+          <li>Server-side pricing through <code>pricing.ts</code> — volume tiers recomputed on the server, never trusted from the client.</li>
+          <li>Shipping address, shipping rate, sales tax. Retire the pickup-window field and the store-hours screen behind it.</li>
+          <li>Payment provider. Fix the 100× cents-as-dollars displays, persist or remove the tip, and put a unique index and an idempotency key on order creation so a double-click can't double-charge.</li>
+          <li>Move the stock read inside the transaction with a row lock and a non-negative constraint.</li>
+        </ol>
+        <div class="gate"><b>Gate:</b> the legal pages already promise tracking numbers and a 30-day return window. Confirm the terms in <code>src/lib/legal.ts</code> before the first real order.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pnum">04</div>
+      <div>
+        <p class="phead">Run the business</p>
+        <p class="pmeta">Blocked by 03 · this is where you'll live day to day</p>
+        <ol>
+          <li>Order lifecycle beyond four free-text states: paid, in production, proof approved, shipped, delivered, refunded — with a state machine, not any-to-any.</li>
+          <li>Tracking number field, a shipped email, and a customer-facing status page keyed on the confirmation code.</li>
+          <li>Search, filter and pagination on orders. Cancelling restocks; cancelled orders leave the revenue figure alone.</li>
+          <li>A production queue: which proofs are approved and waiting to print, exportable for your printer.</li>
+          <li>Inventory for stands — <code>stand_variants</code> has no stock column at all today.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pnum">05</div>
+      <div>
+        <p class="phead">Clear the decks, then grow</p>
+        <p class="pmeta">Safe to start the deletions any time; the rest follows 04</p>
+        <ol>
+          <li>Delete the orphaned components and cannabis libraries. Retire <code>/admin/products</code>, categories, brands and the importer once nothing references the products table.</li>
+          <li>Strip the dead settings screens, or wire them up — analytics is worth wiring, taxes belong in phase 03, the age gate and Weedmaps fields should go.</li>
+          <li>Point the SEO checklist and the regenerate button at stands. Delete the DC neighbourhood pages.</li>
+          <li>Either build <code>/blog</code> or remove the admin screen. Right now it publishes into a void.</li>
+          <li>Hosted multi-link: the landing page builder, subscription billing, and the lapse behaviour your terms already describe.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">What I need from you</h2>
+    <p class="sec-note">Four calls I shouldn't make alone.</p>
+
+    <div class="decision">
+      <h3>Payment provider</h3>
+      <p>Stripe is the default answer for a US store selling physical goods with a subscription alongside — one integration covers both the one-off stand and the $9.99/month. Say the word and I'll build against it.</p>
+    </div>
+    <div class="decision">
+      <h3>Who prints and ships</h3>
+      <p>This decides the whole of phase 04. A print-on-demand partner with an API means we push approved proofs automatically. Printing in-house means we build a queue and you export files. Very different builds.</p>
+    </div>
+    <div class="decision">
+      <h3>Terms in <code>src/lib/legal.ts</code></h3>
+      <p>Governing law is set to the District of Columbia; dispatch windows, the 30-day return window and the 12-month warranty are my defaults. They're published on your live site. Confirm or change them.</p>
+    </div>
+    <div class="decision">
+      <h3>Delete the legacy catalogue?</h3>
+      <p>It cannot go until the stands checkout replaces it — the order API still reads the products table. But I'd like your agreement now that it goes, so I build phase 03 for stands only instead of trying to support both.</p>
+    </div>
+  </section>
+
+  <footer>
+    Audited against main @ 9c04a57 · four parallel passes over the admin, API routes, data layer and order path · findings verified in source before publishing
+  </footer>
+
+</div>
