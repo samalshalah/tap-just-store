@@ -174,7 +174,10 @@ export function buildOrderEmailMessages({
 
   const storeName = displayName(settings.store?.name);
   const baseUrl = normalizeBaseUrl(siteUrl);
-  const orderUrl = `${baseUrl}/order/${order.id}`;
+  // The code is what authorises the page, so the emailed link must carry it.
+  const orderUrl = `${baseUrl}/order/${order.id}?code=${encodeURIComponent(
+    order.confirmationCode
+  )}`;
   const storeRecipients = normalizeEmailList(
     settings.store?.order_confirmation_email ?? settings.contact?.email
   );

@@ -121,7 +121,8 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
       }
       const order = await res.json();
       clearCart();
-      router.push(`/order/${order.id}`);
+      // The code is what authorises the confirmation page — see order/[id].
+      router.push(`/order/${order.id}?code=${encodeURIComponent(order.confirmationCode)}`);
     } catch (err) {
       toast.error("Order failed", {
         description:

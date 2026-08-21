@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { assertAdmin } from "@/lib/admin-auth";
 import { standsTable, standBusinessUsesTable } from "@/lib/schema/stands";
 import { standTypesTable } from "@/lib/schema/standTypes";
 import { businessUsesTable } from "@/lib/schema/businessUses";
@@ -29,6 +30,7 @@ export interface AdminStandRow {
 }
 
 export async function listStandsForAdmin(): Promise<AdminStandRow[]> {
+  await assertAdmin();
   const rows = await db
     .select({
       stand: standsTable,
@@ -66,6 +68,7 @@ export async function listStandsForAdmin(): Promise<AdminStandRow[]> {
 }
 
 export async function getStandForEdit(id: number) {
+  await assertAdmin();
   const [stand] = await db.select().from(standsTable).where(eq(standsTable.id, id)).limit(1);
   if (!stand) return null;
   const [types, uses, selected, variants] = await Promise.all([
@@ -91,6 +94,7 @@ export async function getStandForEdit(id: number) {
 }
 
 export async function saveStand(formData: FormData) {
+  await assertAdmin();
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) throw new Error("Bad stand id");
 
@@ -170,6 +174,7 @@ function revalidateStandPaths() {
  * complete enough to be priced the moment it exists.
  */
 export async function createStand(formData: FormData): Promise<number> {
+  await assertAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) throw new Error("A stand needs a name");
 
@@ -230,6 +235,7 @@ export async function createStand(formData: FormData): Promise<number> {
  * imported without a full grid. Existing rows and their prices are untouched.
  */
 export async function ensureVariants(standId: number): Promise<number> {
+  await assertAdmin();
   const [stand] = await db
     .select()
     .from(standsTable)
@@ -268,6 +274,7 @@ export async function ensureVariants(standId: number): Promise<number> {
  * created by mistake.
  */
 export async function deleteStand(standId: number): Promise<void> {
+  await assertAdmin();
   await db.delete(standVariantsTable).where(eq(standVariantsTable.standId, standId));
   await db
     .delete(standBusinessUsesTable)

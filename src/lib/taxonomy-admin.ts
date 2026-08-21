@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { assertAdmin } from "@/lib/admin-auth";
 import { standTypesTable } from "@/lib/schema/standTypes";
 import { businessUsesTable } from "@/lib/schema/businessUses";
 import { standsTable, standBusinessUsesTable } from "@/lib/schema/stands";
@@ -29,6 +30,7 @@ export async function listTaxonomy(): Promise<{
   types: TaxonomyRow[];
   uses: TaxonomyRow[];
 }> {
+  await assertAdmin();
   const [types, uses, stands, links] = await Promise.all([
     db.select().from(standTypesTable).orderBy(asc(standTypesTable.sortOrder)),
     db.select().from(businessUsesTable).orderBy(asc(businessUsesTable.sortOrder)),
@@ -72,6 +74,7 @@ export async function listTaxonomy(): Promise<{
  * the CDN for an hour, which is why the field says so.
  */
 export async function saveTaxonomyRow(formData: FormData) {
+  await assertAdmin();
   const kind = String(formData.get("kind"));
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) throw new Error("Bad id");
@@ -100,6 +103,7 @@ export async function saveTaxonomyRow(formData: FormData) {
 
 /** Used by the editor's use-picker so it never falls out of step. */
 export async function listBusinessUseIds(standId: number): Promise<number[]> {
+  await assertAdmin();
   const rows = await db
     .select()
     .from(standBusinessUsesTable)

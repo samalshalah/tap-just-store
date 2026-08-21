@@ -11,6 +11,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { isAdminSession } from "@/lib/admin-auth";
 import { z } from "zod";
 import { inArray, eq, sql } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -256,16 +257,40 @@ export async function POST(req: Request) {
   }
 }
 
+/**
+ * Read one order.
+ *
+ * The id is a sequential integer, so this used to be an open list of every
+ * customer's name, email, phone and notes to anyone who counted from 1. A
+ * caller now needs either an admin session or the order's confirmation code,
+ * which is the random value we already generate and email to the customer.
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const idStr = url.searchParams.get("id");
   if (!idStr) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+
   const id = parseInt(idStr, 10);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  }
+
   const order = await getOrderById(id);
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
+
+  const supplied = url.searchParams.get("code")?.trim() ?? "";
+  const codeMatches =
+    supplied.length > 0 &&
+    supplied.toUpperCase() === (order.confirmationCode ?? "").toUpperCase();
+
+  if (!codeMatches && !(await isAdminSession())) {
+    // Deliberately 404, not 403: a 403 would confirm the order exists.
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
   return NextResponse.json(order);
 }

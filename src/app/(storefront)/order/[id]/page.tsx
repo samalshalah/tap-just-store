@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, MapPin, Clock, ArrowRight } from "lucide-react";
 import { getOrderById } from "@/lib/data";
+import { isAdminSession } from "@/lib/admin-auth";
 import type { OrderItem } from "@/lib/schema/orderItems";
 import { getSiteSettings } from "@/lib/settings";
 import { DEFAULTS } from "@/lib/defaults";
@@ -16,10 +17,12 @@ export const metadata: Metadata = {
 
 export default async function OrderConfirmationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ code?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const orderId = parseInt(id, 10);
   if (!orderId || isNaN(orderId)) notFound();
 
@@ -28,6 +31,14 @@ export default async function OrderConfirmationPage({
     getSiteSettings(),
   ]);
   const order = orderOrNull ?? notFound();
+
+  // The id is sequential, so the page needs the confirmation code — otherwise
+  // counting from 1 walks every customer's name, email, phone and notes.
+  // notFound() rather than a 403: a 403 would confirm the order exists.
+  const supplied = (query.code ?? "").trim().toUpperCase();
+  if (supplied !== (order.confirmationCode ?? "").toUpperCase()) {
+    if (!(await isAdminSession())) notFound();
+  }
 
   const storeName = settings.store?.name || DEFAULTS.storeName;
   const address = settings.location?.address;
