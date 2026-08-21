@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
 import { formatMoney } from "@/lib/money";
 import type { VolumeTierRule } from "@/lib/pricing";
 import { nextTier } from "@/lib/pricing";
+import type { StandOptionCode } from "./StandDetail";
 
-interface VariantLite {
+export interface VariantLite {
   size: string;
   optionCode: string;
   priceCents: number;
@@ -14,38 +13,43 @@ interface VariantLite {
   active: boolean;
 }
 
-const SIZE_LABEL: Record<string, string> = {
-  a5: "A5 — 148 × 210 mm",
-  a4: "A4 — 210 × 297 mm",
+const SIZE_MM: Record<string, string> = {
+  a5: "148 × 210 mm",
+  a4: "210 × 297 mm",
 };
 
+/**
+ * Size and finish for a stand.
+ *
+ * Fully controlled: the selection lives in StandDetail so the gallery shows
+ * the finish being priced here. This component decides nothing on its own.
+ */
 export function StandBuyBox({
-  standSlug,
-  standName,
   variants,
-  brandedImageUrl,
-  mainImageUrl,
+  sizes,
+  size,
+  onSize,
+  option,
+  onOption,
   tiers,
 }: {
-  standSlug: string;
-  standName: string;
   variants: VariantLite[];
-  brandedImageUrl: string | null;
-  mainImageUrl: string | null;
+  sizes: string[];
+  size: string;
+  onSize: (size: string) => void;
+  option: StandOptionCode;
+  onOption: (option: StandOptionCode) => void;
   tiers: VolumeTierRule[];
 }) {
-  const sizes = useMemo(
-    () => Array.from(new Set(variants.filter((v) => v.active).map((v) => v.size))).sort().reverse(),
-    [variants]
-  );
-  const [size, setSize] = useState(sizes[0] ?? "a5");
-  const [option, setOption] = useState<"standard_direct" | "branded_qr_direct">("standard_direct");
-
   const chosen = variants.find(
     (v) => v.size === size && v.optionCode === option && v.active
   );
-  const standard = variants.find((v) => v.size === size && v.optionCode === "standard_direct");
-  const branded = variants.find((v) => v.size === size && v.optionCode === "branded_qr_direct");
+  const standard = variants.find(
+    (v) => v.size === size && v.optionCode === "standard_direct"
+  );
+  const branded = variants.find(
+    (v) => v.size === size && v.optionCode === "branded_qr_direct"
+  );
   const upgradeDelta =
     standard && branded ? branded.priceCents - standard.priceCents : 0;
 
@@ -62,14 +66,19 @@ export function StandBuyBox({
             <button
               key={s}
               type="button"
-              onClick={() => setSize(s)}
+              onClick={() => onSize(s)}
+              aria-pressed={size === s}
               className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                size === s ? "border-accent bg-accent/10" : "border-border hover:border-accent/50"
+                size === s
+                  ? "border-accent bg-accent/10"
+                  : "border-border hover:border-accent/50"
               }`}
             >
-              <span className="block text-sm font-bold text-foreground">{s.toUpperCase()}</span>
+              <span className="block text-sm font-bold text-foreground">
+                {s.toUpperCase()}
+              </span>
               <span className="block text-xs text-muted-foreground">
-                {SIZE_LABEL[s]?.split("—")[1]?.trim()}
+                {SIZE_MM[s] ?? ""}
               </span>
             </button>
           ))}
@@ -78,45 +87,34 @@ export function StandBuyBox({
 
       <div>
         <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Setup
+          Finish
         </h2>
         <div className="space-y-3">
           <OptionRow
             selected={option === "standard_direct"}
-            onSelect={() => setOption("standard_direct")}
+            onSelect={() => onOption("standard_direct")}
             title="Standard Direct"
             price={standard?.priceCents ?? 0}
-            points={["NFC only — no printed QR code", "You provide one destination link", "Ships with our standard artwork"]}
+            points={[
+              "NFC only — no printed QR code",
+              "You provide one destination link",
+              "Ships with our standard artwork",
+            ]}
           />
           <OptionRow
             selected={option === "branded_qr_direct"}
-            onSelect={() => setOption("branded_qr_direct")}
+            onSelect={() => onOption("branded_qr_direct")}
             title="Branded + QR"
             price={branded?.priceCents ?? 0}
             badge={upgradeDelta > 0 ? `+${formatMoney(upgradeDelta)}` : undefined}
             points={[
-              "NFC + a printed QR code",
+              "NFC plus a printed QR code",
               "Your logo and business name printed on the stand",
               "You approve a proof before we print",
             ]}
           />
         </div>
       </div>
-
-      {option === "branded_qr_direct" && brandedImageUrl && (
-        <div className="overflow-hidden rounded-xl border border-border bg-white">
-          <Image
-            src={brandedImageUrl}
-            alt={`${standName} with your branding`}
-            width={900}
-            height={900}
-            className="h-auto w-full"
-          />
-          <p className="border-t border-border p-3 text-center text-xs text-muted-foreground">
-            Your logo, business name and QR are added in the next step.
-          </p>
-        </div>
-      )}
 
       <button
         type="button"
@@ -127,13 +125,16 @@ export function StandBuyBox({
       </button>
       <p className="text-center text-xs text-muted-foreground">
         Setup flow coming next: you&apos;ll add your link
-        {option === "branded_qr_direct" ? ", logo and business name, then approve a proof" : ""} before checkout.
+        {option === "branded_qr_direct"
+          ? ", logo and business name, then approve a proof"
+          : ""}{" "}
+        before checkout.
       </p>
 
       {upcoming && (
         <p className="rounded-xl border border-border bg-card px-4 py-3 text-center text-sm text-foreground/80">
-          Buy any {upcoming.minQuantity} stands and save {upcoming.discountPercent}% — mix
-          sizes, faces and setups however you like.
+          Buy any {upcoming.minQuantity} stands and save {upcoming.discountPercent}% —
+          mix sizes, faces and finishes however you like.
         </p>
       )}
     </div>
@@ -159,6 +160,7 @@ function OptionRow({
     <button
       type="button"
       onClick={onSelect}
+      aria-pressed={selected}
       className={`w-full rounded-xl border p-4 text-left transition-colors ${
         selected ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
       }`}

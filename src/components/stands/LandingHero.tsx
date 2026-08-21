@@ -9,9 +9,17 @@ import type { LandingCopy } from "@/lib/landing-copy";
  * The landing-page hero: one template, two columns.
  *
  * Left is the words — eyebrow, headline, one line of copy, the price line and
- * the call to action. Right is the photograph, filling its column edge to edge
- * and cropping to whatever height the words need. The row is `items-stretch`,
- * so the two columns are always the same height without anyone hard-coding one.
+ * the call to action. Right is the photograph, filling its column edge to edge.
+ *
+ * The hero is a FIXED height on desktop, deliberately. Letting the words drive
+ * it meant a three-line headline produced a taller hero than a one-line one,
+ * so moving between landing pages made the photograph jump size. Every page is
+ * the same block now; the words centre inside it and the photo fills it.
+ *
+ * 30rem is set against the tallest copy we have — a three-line headline plus
+ * a two-line tagline, which needs about 453px — with room to spare. A headline
+ * longer than that would be clipped by the card's overflow, so check this
+ * height if you add one.
  *
  * Below the large breakpoint it stacks: words first, then the photo in a 3:2
  * frame. A page with no photo yet renders the words alone across the full
@@ -59,11 +67,11 @@ export function LandingHero({
           <div
             className={
               photo
-                ? "grid items-stretch lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]"
-                : "grid"
+                ? "grid items-stretch lg:h-[30rem] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]"
+                : "grid lg:h-[30rem]"
             }
           >
-            <div className="flex flex-col justify-center px-6 py-10 md:px-10 lg:px-12 lg:py-14">
+            <div className="flex flex-col justify-center px-6 py-10 md:px-10 lg:px-12 lg:py-12">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-foreground">
                 {copy.eyebrow}
               </p>
@@ -97,7 +105,7 @@ export function LandingHero({
             </div>
 
             {photo && (
-              <div className="relative aspect-[3/2] w-full lg:aspect-auto lg:h-full lg:min-h-[26rem]">
+              <div className="relative aspect-[3/2] w-full lg:aspect-auto lg:h-full">
                 <Image
                   src={photo}
                   alt={imageAlt}
