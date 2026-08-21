@@ -4,9 +4,13 @@
 /images/*
   Cache-Control: public,max-age=31536000,immutable
 
-# Landing photography is editable content, not a build artefact: the filename
-# stays the same when a photo is swapped, so it must never be immutable. The
-# stored URL also carries a ?v= stamp, which is what actually busts the cache;
-# this rule is the safety net for anything that reaches the file without one.
+# Landing photography and product renders are editable content, not build
+# artefacts: the filename stays the same when a picture is swapped, so they
+# must never be immutable. The stored URL also carries a ?v= stamp, which is
+# what actually busts the cache; these rules are the safety net for anything
+# that reaches the file without one.
 /images/landing/*
+  Cache-Control: public,max-age=3600,stale-while-revalidate=604800
+
+/images/stands/*
   Cache-Control: public,max-age=3600,stale-while-revalidate=604800
