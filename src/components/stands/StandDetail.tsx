@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { StandGallery } from "./StandGallery";
 import { StandBuyBox, type VariantLite } from "./StandBuyBox";
+import { StandSpecs } from "./StandSpecs";
 import type { VolumeTierRule } from "@/lib/pricing";
 
 export type StandOptionCode = "standard_direct" | "branded_qr_direct";
@@ -76,6 +77,7 @@ export function StandDetail({
           onOption={setOption}
           tiers={tiers}
         />
+        <StandSpecs />
       </div>
     </div>
   );

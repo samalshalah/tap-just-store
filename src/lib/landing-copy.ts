@@ -39,7 +39,7 @@ const GENERIC_FAQS = [
   },
   {
     q: "How much is it?",
-    a: "The Small stand (5.8\u2033 \u00d7 8.3\u2033) is $39 and the Large (8.3\u2033 \u00d7 11.7\u2033) is $49 for the Standard finish. Adding your logo, business name and a printed QR is $10 more on the Small and $15 more on the Large. Buy 3 and save 15%, 5 and save 20%, 10 and save 25%.",
+    a: "The Small stand (5.8\u2033 \u00d7 8.3\u2033) is $39 and the Large (8.3\u2033 \u00d7 11.7\u2033) is $49 for the Standard finish. Adding your logo, business name and a printed QR is $10 more on the Small and $16 more on the Large. Buy 3 and save 15%, 5 and save 20%, 10 and save 25%.",
   },
 ];
 

@@ -42,7 +42,7 @@ export default function TermsPage() {
           8.3&Prime;, A5) is {formatMoney(3900)} and a Standard Large stand (8.3&Prime;
           × 11.7&Prime;, A4) is {formatMoney(4900)}; adding your logo, business name
           and printed QR is {formatMoney(1000)} more on the Small and{" "}
-          {formatMoney(1500)} more on the Large.
+          {formatMoney(1600)} more on the Large.
         </p>
         <p>
           Volume discounts apply to the total number of stands in an order — 15% at
@@ -130,13 +130,11 @@ export default function TermsPage() {
 
       <Clause heading="9. Warranty and limits">
         <p>
-          We warrant each stand for {LEGAL.warrantyMonths} months under normal
-          counter use, as set out in{" "}
-          <Link
-            href="/shipping-returns"
-            className="font-semibold text-accent hover:underline"
-          >
-            Shipping &amp; Returns
+          Each stand carries our {LEGAL.warrantyName}: we cover defects in
+          materials and workmanship {LEGAL.warrantyTerm}, as set out in full on
+          our{" "}
+          <Link href="/warranty" className="font-semibold text-accent hover:underline">
+            warranty page
           </Link>
           . Beyond that warranty, and to the extent the law allows, the products and
           the hosted page are provided as they are.

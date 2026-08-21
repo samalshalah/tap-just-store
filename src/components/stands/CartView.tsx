@@ -6,6 +6,7 @@ import { useCart } from "@/components/CartContext";
 import { formatMoney } from "@/lib/money";
 import { computeCartTotals, type VolumeTierRule } from "@/lib/pricing";
 import { Trash2 } from "lucide-react";
+import { LEGAL } from "@/lib/legal";
 
 export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
   const { items, totalItems, totalPrice, removeItem, updateQuantity } = useCart();
@@ -125,6 +126,27 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
         >
           Continue shopping
         </Link>
+
+        {/*
+          The warranty link belongs here, not only in the footer. The FTC's
+          pre-sale availability rule requires the terms of a written warranty
+          on a product over $15 to be readable before the customer buys.
+        */}
+        <p className="mt-6 border-t border-border pt-4 text-center text-xs leading-relaxed text-muted-foreground">
+          Every stand carries our{" "}
+          <Link href="/warranty" className="font-semibold text-accent hover:underline">
+            {LEGAL.warrantyName}
+          </Link>
+          {" — "}
+          {LEGAL.warrantyTerm}.{" "}
+          <Link
+            href="/shipping-returns"
+            className="font-semibold text-accent hover:underline"
+          >
+            Shipping &amp; returns
+          </Link>
+          .
+        </p>
       </aside>
     </div>
   );

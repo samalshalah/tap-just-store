@@ -86,14 +86,21 @@ export default function ShippingReturnsPage() {
 
       <Clause heading="If a stand stops working">
         <p>
-          Every stand carries a {LEGAL.warrantyMonths}-month warranty covering the
-          NFC chip and the stand itself under normal counter use. If it stops
-          responding to a tap in that time, we replace it — you do not need to send
-          the old one back.
+          Every stand carries our {LEGAL.warrantyName} — we cover defects in
+          materials and workmanship {LEGAL.warrantyTerm}. If the chip stops
+          responding to a tap, or the stand cracks or the print fails in normal
+          use, send us a photo and we replace it free. You do not need to send the
+          old one back.
         </p>
         <p>
-          The warranty does not cover a stand that has been snapped, soaked, or had
-          the chip prised out.
+          Read the full terms and exclusions on our{" "}
+          <Link
+            href="/warranty"
+            className="font-semibold text-accent hover:underline"
+          >
+            warranty page
+          </Link>
+          .
         </p>
       </Clause>
 

@@ -272,4 +272,30 @@
     color: #0f172a !important;
     padding: 0.1rem 0.25rem;
   }
+
+  /*
+   * Policy-page prose.
+   *
+   * The .legal-prose class was on the layout but had no rules behind it, so a
+   * <ul> in a policy rendered as unmarked lines — which matters most on the
+   * warranty page, where "what is not covered" is a list a customer needs to
+   * be able to scan.
+   */
+  .legal-prose ul {
+    list-style-type: disc;
+    padding-left: 1.35rem;
+  }
+
+  .legal-prose ol {
+    list-style-type: decimal;
+    padding-left: 1.35rem;
+  }
+
+  .legal-prose li {
+    margin-top: 0.4rem;
+  }
+
+  .legal-prose li::marker {
+    color: var(--color-accent, currentColor);
+  }
 }
