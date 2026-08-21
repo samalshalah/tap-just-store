@@ -12,6 +12,11 @@ Both are always written together — the hero name is derived from the card name
 in src/lib/landing-images.ts, so a page with one file and not the other would
 render a broken image. Then it emits the SQL pointing the page at the pair.
 
+The stored URL carries a ?v= stamp taken from the source file's timestamp.
+Swapping a photo keeps the filename, and the CDN caches by URL, so without the
+stamp a replaced photo would keep serving the old one from cache. The stamp
+changes whenever the source does, and nothing has to be remembered by hand.
+
     python3 scripts/import-landing-photos.py ~/photos
     python3 scripts/import-landing-photos.py ~/photos --apply
 
@@ -98,7 +103,7 @@ def write_pair(im: Image.Image, slug: str, anchor: float) -> None:
         out.save(OUT_DIR / f"{slug}{suffix}.webp", quality=82, method=6)
 
 
-def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str] | None:
+def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str, int] | None:
     slug = path.stem.lower().strip()
 
     if slug in USE_SLUGS:
@@ -118,8 +123,9 @@ def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str] | Non
     kb = sum(
         (OUT_DIR / f"{slug}{s}.jpg").stat().st_size for s in ("", "-hero")
     ) // 1024
+    version = int(path.stat().st_mtime)
     print(f"  ✓ {slug}  {im.size[0]}x{im.size[1]} → card + hero  ({kb} KB)")
-    return table, slug
+    return table, slug, version
 
 
 def main() -> int:
@@ -152,8 +158,9 @@ def main() -> int:
         sys.exit("\nNothing imported.")
 
     statements = [
-        f"UPDATE {table} SET hero_image_url = '{WEB_DIR}/{slug}.jpg' WHERE slug = '{slug}';"
-        for table, slug in done
+        f"UPDATE {table} SET hero_image_url = '{WEB_DIR}/{slug}.jpg?v={version}' "
+        f"WHERE slug = '{slug}';"
+        for table, slug, version in done
     ]
     sql = "\n".join(statements) + "\n"
 
