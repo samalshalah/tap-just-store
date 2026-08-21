@@ -33,7 +33,17 @@ const EXPECTED = {
   ],
   stand_business_uses: ["stand_id", "business_use_id"],
   volume_tiers: ["id", "min_quantity", "discount_percent", "label"],
+  admin_login_attempts: ["id", "ip", "succeeded", "attempted_at"],
 };
+
+/** Constraints and indexes that must exist, whatever the columns say. */
+const EXPECTED_INDEXES = [
+  "orders_confirmation_code_key",
+  "orders_created_at_idx",
+  "order_items_order_id_idx",
+  "stands_status_sort_idx",
+  "admin_login_attempts_ip_time_idx",
+];
 
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
 if (!connectionString) {
@@ -57,6 +67,9 @@ const { rows } = await client.query(
       and table_name = ANY($1)`,
   [Object.keys(EXPECTED)]
 );
+const { rows: indexRows } = await client.query(
+  `select indexname from pg_indexes where schemaname = 'public'`
+);
 await client.end();
 
 const actual = new Map();
@@ -76,6 +89,11 @@ for (const [table, columns] of Object.entries(EXPECTED)) {
   if (missing.length) problems.push(`${table}: missing ${missing.join(", ")}`);
 }
 
+const haveIndexes = new Set(indexRows.map((r) => r.indexname));
+for (const name of EXPECTED_INDEXES) {
+  if (!haveIndexes.has(name)) problems.push(`index ${name} is missing`);
+}
+
 if (problems.length) {
   console.error("Schema drift — the code selects columns this database does not have:\n");
   for (const p of problems) console.error(`  ✗ ${p}`);
@@ -83,4 +101,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`✓ schema matches: ${Object.keys(EXPECTED).length} tables, all expected columns present`);
+console.log(
+  `✓ schema matches: ${Object.keys(EXPECTED).length} tables, all expected columns present, ` +
+    `${EXPECTED_INDEXES.length} required indexes in place`
+);

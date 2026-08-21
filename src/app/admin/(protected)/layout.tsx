@@ -1,37 +1,10 @@
-import { cookies } from "next/headers";
-import { createHmac } from "crypto";
 import Link from "next/link";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 import { LoginForm } from "../login/LoginForm";
 import { AdminShellNav } from "./AdminShellNav";
 import { LogoutButton } from "./LogoutButton";
+import { isAdminSession } from "@/lib/admin-auth";
 
-const COOKIE_NAME = "jc_admin_session";
-const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7;
-
-function hmacHex(secret: string, message: string): string {
-  return createHmac("sha256", secret).update(message).digest("hex");
-}
-
-async function hasAdminSession(): Promise<boolean> {
-  const secret = process.env.ADMIN_PASSWORD;
-  if (!secret) return false;
-
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get(COOKIE_NAME);
-  if (!cookie?.value) return false;
-
-  const [issuedAtStr, sig] = cookie.value.split(".");
-  if (!issuedAtStr || !sig) return false;
-
-  const issuedAt = parseInt(issuedAtStr, 10);
-  if (isNaN(issuedAt)) return false;
-
-  const ageSec = Math.floor(Date.now() / 1000) - issuedAt;
-  if (ageSec < 0 || ageSec > SESSION_MAX_AGE_SEC) return false;
-
-  return hmacHex(secret, issuedAtStr) === sig;
-}
 
 function LoginOnly() {
   return (
@@ -52,7 +25,7 @@ export default async function ProtectedAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isAuthed = await hasAdminSession();
+  const isAuthed = await isAdminSession();
 
   if (!isAuthed) return <LoginOnly />;
 

@@ -131,6 +131,11 @@ export function streamObject(
 ): Response {
   const headers: Record<string, string> = {
     "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+    // Belt and braces alongside the magic-byte check on the way in: even if
+    // something non-image reached the bucket, the browser will not sniff it
+    // into something executable, and it cannot be framed.
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "default-src 'none'; sandbox",
     "Cache-Control": isPublic
       ? `public, max-age=${cacheTtlSec}, stale-while-revalidate=86400`
       : `private, max-age=${cacheTtlSec}`,
@@ -148,16 +153,83 @@ export function getUploadTarget(): { uploadUrl: string; objectPath: string } {
   };
 }
 
+/** 8 MB. Well past a product photo, well short of anything worth abusing. */
+export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Image types we will store, and the magic bytes that prove it.
+ *
+ * The browser's Content-Type is a claim, not a fact. Uploads are served back
+ * from our own origin, so an HTML or SVG file accepted here and echoed with
+ * its declared type would execute as same-origin script — session cookie and
+ * all. The type is decided by looking at the bytes, and SVG is not on the list
+ * precisely because it can carry script.
+ */
+const MAGIC: { type: string; ext: string; test: (b: Uint8Array) => boolean }[] = [
+  {
+    type: "image/jpeg",
+    ext: "jpg",
+    test: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  },
+  {
+    type: "image/png",
+    ext: "png",
+    test: (b) =>
+      b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
+  },
+  {
+    type: "image/gif",
+    ext: "gif",
+    test: (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46,
+  },
+  {
+    type: "image/webp",
+    ext: "webp",
+    test: (b) =>
+      b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+  },
+  {
+    type: "image/avif",
+    ext: "avif",
+    test: (b) =>
+      b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70 &&
+      b[8] === 0x61 && b[9] === 0x76 && b[10] === 0x69 && b[11] === 0x66,
+  },
+];
+
+/** Returns the real image type, or null when the bytes are not an image. */
+export function sniffImageType(bytes: ArrayBuffer): string | null {
+  const head = new Uint8Array(bytes.slice(0, 16));
+  if (head.length < 12) return null;
+  return MAGIC.find((m) => m.test(head))?.type ?? null;
+}
+
 export async function putUploadedObject({
   objectPath,
   body,
-  contentType,
 }: {
   objectPath: string;
-  body: ReadableStream | ArrayBuffer | null;
-  contentType?: string | null;
+  body: ArrayBuffer | null;
 }): Promise<void> {
   if (!body) throw new Error("Missing upload body.");
+
+  if (body.byteLength > MAX_UPLOAD_BYTES) {
+    throw new Error(
+      `That file is ${(body.byteLength / 1024 / 1024).toFixed(1)} MB. The limit is ${
+        MAX_UPLOAD_BYTES / 1024 / 1024
+      } MB.`
+    );
+  }
+
+  // The stored type comes from the bytes, never from the request header.
+  const contentType = sniffImageType(body);
+  if (!contentType) {
+    throw new Error(
+      "That is not a JPEG, PNG, GIF, WebP or AVIF image. SVG is not accepted."
+    );
+  }
+
   const norm = objectPath.startsWith("/") ? objectPath : `/${objectPath}`;
   if (!norm.startsWith("/objects/uploads/")) {
     throw new Error("Invalid upload object path.");
@@ -168,8 +240,6 @@ export async function putUploadedObject({
     return;
   }
   await mediaBucket().put(key, body, {
-    httpMetadata: {
-      contentType: contentType || contentTypeFromKey(key),
-    },
+    httpMetadata: { contentType },
   });
 }

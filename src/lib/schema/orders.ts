@@ -1,9 +1,17 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, index } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const ordersTable = pgTable("orders", {
+export const ordersTable = pgTable(
+  "orders",
+  {
   id: serial("id").primaryKey(),
-  confirmationCode: text("confirmation_code").notNull(),
+  /**
+   * Unique because the code is now an authorisation token for the
+   * confirmation page, and because the collision-retry loop in /api/orders
+   * was checking for a duplicate with nothing stopping two concurrent
+   * transactions choosing the same one.
+   */
+  confirmationCode: text("confirmation_code").notNull().unique(),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerPhone: text("customer_phone").notNull(),
@@ -12,7 +20,13 @@ export const ordersTable = pgTable("orders", {
   status: text("status").notNull().default("pending"),
   totalPrice: integer("total_price").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+  },
+  (t) => [
+    // The admin list is ordered by this column and nothing else.
+    index("orders_created_at_idx").on(t.createdAt),
+    index("orders_status_idx").on(t.status),
+  ]
+);
 
 export const insertOrderSchema = z.object({
   confirmationCode: z.string(),
