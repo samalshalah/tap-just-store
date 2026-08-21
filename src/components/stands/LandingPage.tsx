@@ -73,7 +73,7 @@ export function LandingPage({
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-12">
+      <section id="stands" className="container mx-auto px-4 pb-12 scroll-mt-24">
         <div className="mb-6 flex items-baseline justify-between">
           <h2 className="font-display text-2xl font-bold text-foreground">
             {results.length} {results.length === 1 ? "stand" : "stands"} to choose from

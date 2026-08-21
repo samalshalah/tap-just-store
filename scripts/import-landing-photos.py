@@ -2,9 +2,15 @@
 """
 Import landing-page photography.
 
-Reads images named after a stand-type or business-use slug, crops them to the
-hero card's 2:1 shape, writes an optimised JPG and WebP into
-public/images/landing/, and emits the SQL that points the page at the file.
+Reads images named after a stand-type or business-use slug and writes two
+shapes of each into public/images/landing/, as JPG and WebP:
+
+    <slug>.jpg        2:1   the shop-by-use card
+    <slug>-hero.jpg   3:2   the right column of the landing page hero
+
+Both are always written together — the hero name is derived from the card name
+in src/lib/landing-images.ts, so a page with one file and not the other would
+render a broken image. Then it emits the SQL pointing the page at the pair.
 
     python3 scripts/import-landing-photos.py ~/photos
     python3 scripts/import-landing-photos.py ~/photos --apply
@@ -35,8 +41,8 @@ REPO = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO / "public" / "images" / "landing"
 WEB_DIR = "/images/landing"
 
-TARGET_WIDTH = 1300
-TARGET_RATIO = 1300 / 651  # matches the aspect box in LandingHero and UseCard
+CARD_WIDTH, CARD_HEIGHT = 1300, 651   # 2:1, matches the aspect box in UseCard
+HERO_WIDTH, HERO_HEIGHT = 1200, 800   # 3:2, the hero's image column
 DEFAULT_ANCHOR = 0.4
 SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -66,19 +72,30 @@ TYPE_SLUGS = {
 }
 
 
-def crop_to_ratio(im: Image.Image, anchor: float = DEFAULT_ANCHOR) -> Image.Image:
-    """Centre horizontally; position the 2:1 slice vertically by anchor."""
+def crop_to_ratio(im: Image.Image, ratio: float, anchor: float) -> Image.Image:
+    """Centre horizontally; position the slice vertically by anchor."""
     w, h = im.size
-    want_h = round(w / TARGET_RATIO)
+    want_h = round(w / ratio)
 
     if want_h <= h:
         top = round((h - want_h) * min(max(anchor, 0.0), 1.0))
         return im.crop((0, top, w, top + want_h))
 
     # Too wide for the ratio: narrow it instead, centred.
-    want_w = round(h * TARGET_RATIO)
+    want_w = round(h * ratio)
     left = (w - want_w) // 2
     return im.crop((left, 0, left + want_w, h))
+
+
+def write_pair(im: Image.Image, slug: str, anchor: float) -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    for suffix, (tw, th) in (
+        ("", (CARD_WIDTH, CARD_HEIGHT)),
+        ("-hero", (HERO_WIDTH, HERO_HEIGHT)),
+    ):
+        out = crop_to_ratio(im, tw / th, anchor).resize((tw, th), Image.LANCZOS)
+        out.save(OUT_DIR / f"{slug}{suffix}.jpg", quality=86, optimize=True, progressive=True)
+        out.save(OUT_DIR / f"{slug}{suffix}.webp", quality=82, method=6)
 
 
 def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str] | None:
@@ -93,21 +110,15 @@ def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str] | Non
         return None
 
     im = Image.open(path).convert("RGB")
-    if im.width < TARGET_WIDTH:
+    if im.width < CARD_WIDTH:
         print(f"  ! {path.name}: only {im.width}px wide, will look soft on a big screen")
 
-    out = crop_to_ratio(im, anchor)
-    height = round(TARGET_WIDTH / TARGET_RATIO)
-    out = out.resize((TARGET_WIDTH, height), Image.LANCZOS)
+    write_pair(im, slug, anchor)
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    jpg = OUT_DIR / f"{slug}.jpg"
-    webp = OUT_DIR / f"{slug}.webp"
-    out.save(jpg, quality=88, optimize=True, progressive=True)
-    out.save(webp, quality=84, method=6)
-
-    kb = jpg.stat().st_size // 1024
-    print(f"  ✓ {slug}  {im.size[0]}x{im.size[1]} → {TARGET_WIDTH}x{height}  ({kb} KB)")
+    kb = sum(
+        (OUT_DIR / f"{slug}{s}.jpg").stat().st_size for s in ("", "-hero")
+    ) // 1024
+    print(f"  ✓ {slug}  {im.size[0]}x{im.size[1]} → card + hero  ({kb} KB)")
     return table, slug
 
 

@@ -36,12 +36,8 @@ export default async function StorefrontLayout({
 }) {
   const settings = await getSiteSettings();
   const storeName = settings.store?.name || DEFAULTS.storeName;
-  const storefrontPhone =
-    settings.location?.phone ||
-    settings.contact?.phone ||
-    settings.store?.phone;
-  const storefrontAddress = settings.location?.address || settings.store?.address;
-  const showStickyActions = Boolean(storefrontPhone || storefrontAddress);
+  // The mobile bar is Shop and Cart now, so it is always relevant.
+  const showStickyActions = true;
 
   if (settings.maintenance_mode) {
     return (
@@ -97,15 +93,7 @@ export default async function StorefrontLayout({
           <main className="flex-grow pt-[88px] md:pt-[104px]">{children}</main>
           <Footer />
           {showStickyActions && (
-            <MobileStickyActions
-              storeName={storeName}
-              phone={storefrontPhone}
-              address={storefrontAddress}
-              city={settings.location?.city}
-              state={settings.location?.state}
-              zip={settings.location?.zip}
-              placeId={settings.integrations?.google_business_profile_place_id}
-            />
+            <MobileStickyActions />
           )}
           <ToasterProvider />
         </div>
