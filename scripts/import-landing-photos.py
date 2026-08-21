@@ -9,9 +9,12 @@ public/images/landing/, and emits the SQL that points the page at the file.
     python3 scripts/import-landing-photos.py ~/photos
     python3 scripts/import-landing-photos.py ~/photos --apply
 
-Why crop from the bottom: the stand is nearly always on a counter in the lower
-half of the frame, and the top of the hero image is covered by the fade into
-the white card. Cropping from the bottom keeps the product visible.
+Cropping: a 2:1 slice is taken from a taller photo, positioned by --anchor
+(0 = top of the frame, 1 = bottom, default 0.4). Two things pull the right
+answer around: the stand usually sits low in the frame, but people's heads sit
+high and the top of the hero fades into the white card. 0.4 keeps faces intact
+on a typical counter shot; drop it for a tall portrait-ish photo where heads
+are being clipped.
 
 Slugs that do not match a real page are reported and skipped, so a typo in a
 filename never silently produces a page nobody can reach.
@@ -33,7 +36,8 @@ OUT_DIR = REPO / "public" / "images" / "landing"
 WEB_DIR = "/images/landing"
 
 TARGET_WIDTH = 1300
-TARGET_RATIO = 1300 / 651  # matches the aspect box in LandingHero
+TARGET_RATIO = 1300 / 651  # matches the aspect box in LandingHero and UseCard
+DEFAULT_ANCHOR = 0.4
 SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 
 USE_SLUGS = {
@@ -62,22 +66,22 @@ TYPE_SLUGS = {
 }
 
 
-def crop_to_ratio(im: Image.Image) -> Image.Image:
-    """Centre horizontally, anchor to the bottom vertically."""
+def crop_to_ratio(im: Image.Image, anchor: float = DEFAULT_ANCHOR) -> Image.Image:
+    """Centre horizontally; position the 2:1 slice vertically by anchor."""
     w, h = im.size
     want_h = round(w / TARGET_RATIO)
 
     if want_h <= h:
-        # Too tall: take the bottom slice.
-        return im.crop((0, h - want_h, w, h))
+        top = round((h - want_h) * min(max(anchor, 0.0), 1.0))
+        return im.crop((0, top, w, top + want_h))
 
-    # Too wide: narrow it, centred.
+    # Too wide for the ratio: narrow it instead, centred.
     want_w = round(h * TARGET_RATIO)
     left = (w - want_w) // 2
     return im.crop((left, 0, left + want_w, h))
 
 
-def process(path: Path) -> tuple[str, str] | None:
+def process(path: Path, anchor: float = DEFAULT_ANCHOR) -> tuple[str, str] | None:
     slug = path.stem.lower().strip()
 
     if slug in USE_SLUGS:
@@ -92,7 +96,7 @@ def process(path: Path) -> tuple[str, str] | None:
     if im.width < TARGET_WIDTH:
         print(f"  ! {path.name}: only {im.width}px wide, will look soft on a big screen")
 
-    out = crop_to_ratio(im)
+    out = crop_to_ratio(im, anchor)
     height = round(TARGET_WIDTH / TARGET_RATIO)
     out = out.resize((TARGET_WIDTH, height), Image.LANCZOS)
 
@@ -111,6 +115,12 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("source", help="folder holding the photos")
     ap.add_argument(
+        "--anchor",
+        type=float,
+        default=DEFAULT_ANCHOR,
+        help="vertical crop position: 0 = top of frame, 1 = bottom (default 0.4)",
+    )
+    ap.add_argument(
         "--apply",
         action="store_true",
         help="run the SQL against DATABASE_URL instead of only printing it",
@@ -126,7 +136,7 @@ def main() -> int:
         sys.exit(f"No images in {src}")
 
     print(f"Reading {len(files)} image(s) from {src}\n")
-    done = [r for r in (process(p) for p in files) if r]
+    done = [r for r in (process(p, args.anchor) for p in files) if r]
     if not done:
         sys.exit("\nNothing imported.")
 

@@ -56,7 +56,7 @@ export function UseCard({
               transparent black, so the fade would pass through grey. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background via-background/70 to-background/0"
+            className="pointer-events-none absolute inset-x-0 top-0 h-11 bg-gradient-to-b from-background via-background/55 to-background/0"
           />
         </div>
       ) : (
