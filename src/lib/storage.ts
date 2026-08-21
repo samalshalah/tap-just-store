@@ -21,6 +21,25 @@ export class ObjectNotFoundError extends Error {
   }
 }
 
+/**
+ * Whether to write to the on-disk stand-in instead of R2.
+ *
+ * It used to be LOCAL_PREVIEW_MODE alone, which meant `next dev` without that
+ * flag tried to reach an R2 binding that does not exist there and every upload
+ * threw. Falling back whenever the binding is genuinely absent makes the
+ * upload paths testable locally, and in production the binding is always
+ * present so nothing changes.
+ */
+function useLocalStorage(): boolean {
+  if (isLocalPreviewMode()) return true;
+  try {
+    const env = getCloudflareContext().env as CloudflareEnv;
+    return !env?.MEDIA_BUCKET;
+  } catch {
+    return true;
+  }
+}
+
 function mediaBucket(): R2Bucket {
   const env = getCloudflareContext().env as CloudflareEnv;
   if (!env.MEDIA_BUCKET) {
@@ -108,7 +127,7 @@ async function putLocalObject({
 export async function getEntityObject(entityPath: string): Promise<R2ObjectBody> {
   const norm = entityPath.startsWith("/") ? entityPath : `/${entityPath}`;
   if (!norm.startsWith("/objects/")) throw new ObjectNotFoundError();
-  if (isLocalPreviewMode()) {
+  if (useLocalStorage()) {
     const object = await getLocalObject(normalizeKey(norm));
     if (!object) throw new ObjectNotFoundError();
     return object;
@@ -119,7 +138,7 @@ export async function getEntityObject(entityPath: string): Promise<R2ObjectBody>
 }
 
 export async function findPublicObject(filename: string): Promise<R2ObjectBody | null> {
-  if (isLocalPreviewMode()) {
+  if (useLocalStorage()) {
     return getLocalObject(`public/${normalizeKey(filename)}`);
   }
   return mediaBucket().get(`public/${normalizeKey(filename)}`);
@@ -205,6 +224,54 @@ export function sniffImageType(bytes: ArrayBuffer): string | null {
   return MAGIC.find((m) => m.test(head))?.type ?? null;
 }
 
+/**
+ * Logos uploaded by customers configuring a branded stand.
+ *
+ * Deliberately narrower than the admin path, because this endpoint has no
+ * session behind it — anyone on the internet can reach it:
+ *
+ *  - 5 MB rather than 8. A logo is a logo.
+ *  - PNG and JPEG only. GIF, WebP and AVIF are all fine to *serve*, but this
+ *    file has to come out of a UV printer, and narrowing the input narrows
+ *    what production has to cope with.
+ *  - The type still comes from the bytes. SVG is refused here for the same
+ *    reason as everywhere else: it can carry script, and we serve these back
+ *    from our own origin.
+ */
+export const MAX_LOGO_BYTES = 5 * 1024 * 1024;
+
+const LOGO_TYPES = new Set(["image/png", "image/jpeg"]);
+
+export async function putCustomerLogo(
+  body: ArrayBuffer | null
+): Promise<{ objectPath: string; contentType: string }> {
+  if (!body || body.byteLength === 0) throw new Error("No file was uploaded.");
+
+  if (body.byteLength > MAX_LOGO_BYTES) {
+    throw new Error(
+      `That file is ${(body.byteLength / 1024 / 1024).toFixed(1)} MB. The limit is ${
+        MAX_LOGO_BYTES / 1024 / 1024
+      } MB.`
+    );
+  }
+
+  const contentType = sniffImageType(body);
+  if (!contentType || !LOGO_TYPES.has(contentType)) {
+    throw new Error("Please upload a PNG or JPG image.");
+  }
+
+  const objectPath = `/objects/uploads/setup-logos/${randomUUID()}`;
+  const key = normalizeKey(objectPath);
+
+  if (useLocalStorage()) {
+    await putLocalObject({ key, body, contentType });
+  } else {
+    await mediaBucket().put(key, body, { httpMetadata: { contentType } });
+  }
+
+  return { objectPath, contentType };
+}
+
 export async function putUploadedObject({
   objectPath,
   body,
@@ -235,7 +302,7 @@ export async function putUploadedObject({
     throw new Error("Invalid upload object path.");
   }
   const key = normalizeKey(norm);
-  if (isLocalPreviewMode()) {
+  if (useLocalStorage()) {
     await putLocalObject({ key, body, contentType });
     return;
   }

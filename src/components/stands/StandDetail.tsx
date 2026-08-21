@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { StandGallery } from "./StandGallery";
 import { StandBuyBox, type VariantLite } from "./StandBuyBox";
 import { StandSpecs } from "./StandSpecs";
+import { StandSetup, type SetupTarget } from "./StandSetup";
 import type { VolumeTierRule } from "@/lib/pricing";
 
 export type StandOptionCode = "standard_direct" | "branded_qr_direct";
@@ -19,16 +20,32 @@ export type StandOptionCode = "standard_direct" | "branded_qr_direct";
  */
 export function StandDetail({
   standName,
+  standSlug,
   variants,
   mainImageUrl,
   brandedImageUrl,
+  destinationLabel,
+  badge,
+  printedHeadline,
+  urlLabel,
+  urlPlaceholder,
+  urlHelp,
   tiers,
   children,
 }: {
   standName: string;
+  standSlug: string;
   variants: VariantLite[];
   mainImageUrl: string | null;
   brandedImageUrl: string | null;
+  destinationLabel: string;
+  /** The platform word printed large on the face. */
+  badge: string;
+  printedHeadline: string;
+  /** Per-stand field copy, so the setup form speaks the platform's language. */
+  urlLabel: string;
+  urlPlaceholder: string;
+  urlHelp: string;
   tiers: VolumeTierRule[];
   /** The static copy — title, badge, description — rendered above the buy box. */
   children: React.ReactNode;
@@ -43,6 +60,7 @@ export function StandDetail({
 
   const [size, setSize] = useState(sizes[0] ?? "a5");
   const [option, setOption] = useState<StandOptionCode>("standard_direct");
+  const [setup, setSetup] = useState<SetupTarget | null>(null);
 
   const views = useMemo(() => {
     const list: { option: StandOptionCode; label: string; url: string }[] = [];
@@ -76,7 +94,35 @@ export function StandDetail({
           option={option}
           onOption={setOption}
           tiers={tiers}
+          onContinue={(variant) =>
+            setSetup({
+              standVariantId: variant.id,
+              standSlug,
+              standName,
+              size: variant.size,
+              optionCode: variant.optionCode,
+              priceCents: variant.priceCents,
+              monthlyCents: variant.monthlyCents,
+              // `||`, not `??`: these columns default to an empty string
+              // rather than NULL, and an empty string is not nullish — so
+              // `??` happily passed "" through and the cart rendered a blank
+              // square for every stand without a branded render.
+              imageUrl:
+                (variant.optionCode === "standard_direct"
+                  ? mainImageUrl
+                  : brandedImageUrl || mainImageUrl) || null,
+              destinationLabel,
+              badge,
+              printedHeadline,
+              urlLabel,
+              urlPlaceholder,
+              urlHelp,
+            })
+          }
         />
+        {setup && (
+          <StandSetup target={setup} onCancel={() => setSetup(null)} />
+        )}
         <StandSpecs />
       </div>
     </div>

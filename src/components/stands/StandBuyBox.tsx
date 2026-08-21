@@ -7,6 +7,8 @@ import { standSize } from "@/lib/sizes";
 import type { StandOptionCode } from "./StandDetail";
 
 export interface VariantLite {
+  /** The row the customer actually buys. Carried into the cart line. */
+  id: number;
   size: string;
   optionCode: string;
   priceCents: number;
@@ -28,6 +30,7 @@ export function StandBuyBox({
   option,
   onOption,
   tiers,
+  onContinue,
 }: {
   variants: VariantLite[];
   sizes: string[];
@@ -36,6 +39,8 @@ export function StandBuyBox({
   option: StandOptionCode;
   onOption: (option: StandOptionCode) => void;
   tiers: VolumeTierRule[];
+  /** Hands the chosen variant up to StandDetail, which opens the setup flow. */
+  onContinue: (variant: VariantLite) => void;
 }) {
   const chosen = variants.find(
     (v) => v.size === size && v.optionCode === option && v.active
@@ -125,17 +130,20 @@ export function StandBuyBox({
 
       <button
         type="button"
-        disabled
-        className="w-full cursor-not-allowed rounded-full bg-accent/40 px-6 py-4 text-center font-bold text-background"
+        disabled={!chosen}
+        onClick={() => chosen && onContinue(chosen)}
+        className="w-full rounded-full bg-accent px-6 py-4 text-center font-bold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Continue — {chosen ? formatMoney(chosen.priceCents) : "—"}
+        {chosen
+          ? `Continue — ${formatMoney(chosen.priceCents)}`
+          : "Not available in this size"}
       </button>
       <p className="text-center text-xs text-muted-foreground">
-        Setup flow coming next: you&apos;ll add your link
+        Next you&apos;ll add your link
         {option === "branded_qr_direct"
           ? ", logo and business name, then approve a proof"
-          : ""}{" "}
-        before checkout.
+          : ""}
+        . Nothing is charged yet.
       </p>
 
       {upcoming && (

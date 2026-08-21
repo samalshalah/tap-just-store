@@ -2,14 +2,46 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Trash2 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
 import { formatMoney } from "@/lib/money";
 import { computeCartTotals, type VolumeTierRule } from "@/lib/pricing";
-import { Trash2 } from "lucide-react";
+import { sizeLabel } from "@/lib/sizes";
+import { OPTION_LABELS, type OptionCode } from "@/lib/shop-filter";
 import { LEGAL } from "@/lib/legal";
 
+/** The destination, short enough to read at a glance in a cart line. */
+function prettyUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    const path = u.pathname === "/" ? "" : u.pathname;
+    const shown = `${u.host}${path}`;
+    return shown.length > 44 ? `${shown.slice(0, 43)}…` : shown;
+  } catch {
+    return url.length > 44 ? `${url.slice(0, 43)}…` : url;
+  }
+}
+
 export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
-  const { items, totalItems, totalPrice, removeItem, updateQuantity } = useCart();
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    monthlyTotal,
+    removeItem,
+    updateQuantity,
+    hydrated,
+  } = useCart();
+
+  // Before hydration the cart is always empty, so rendering the empty state
+  // would flash "your cart is empty" at someone who has items.
+  if (!hydrated) {
+    return (
+      <div className="mt-10 rounded-2xl border border-border bg-card p-12 text-center">
+        <p className="text-muted-foreground">Loading your cart…</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -26,7 +58,7 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
   }
 
   const totals = computeCartTotals(
-    items.map((i) => ({ priceCents: i.price, quantity: i.quantity })),
+    items.map((i) => ({ priceCents: i.priceCents, quantity: i.quantity })),
     tiers
   );
   const upcoming = totals.nextTier;
@@ -36,25 +68,75 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
       <div className="space-y-3 lg:col-span-2">
         {items.map((item) => (
           <div
-            key={item.productId}
+            key={item.lineId}
             className="flex gap-4 rounded-2xl border border-border bg-card p-4"
           >
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-white">
               {item.imageUrl && (
-                <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="96px" />
+                <Image
+                  src={item.imageUrl}
+                  alt={item.standName}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
               )}
             </div>
+
             <div className="min-w-0 flex-1">
-              <h2 className="font-bold text-foreground">{item.name}</h2>
+              <h2 className="font-bold text-foreground">
+                <Link
+                  href={`/stands/${item.standSlug}`}
+                  className="hover:text-accent"
+                >
+                  {item.standName}
+                </Link>
+              </h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                {formatMoney(item.price)} each
+                {sizeLabel(item.size)} ·{" "}
+                {OPTION_LABELS[item.optionCode as OptionCode] ?? item.optionCode} ·{" "}
+                {formatMoney(item.priceCents)} each
+                {item.monthlyCents > 0 &&
+                  ` + ${formatMoney(item.monthlyCents)}/mo`}
               </p>
+
+              {/*
+                The setup is shown on the line, not hidden behind an edit
+                screen. It is what will be printed and programmed, and the
+                cart is the last place a typo in a review link is cheap to
+                catch. After this it is printed acrylic.
+              */}
+              <dl className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                <div className="flex gap-1.5">
+                  <dt className="shrink-0 font-semibold text-foreground/70">
+                    Taps to
+                  </dt>
+                  <dd className="truncate">{prettyUrl(item.setup.destinationUrl)}</dd>
+                </div>
+                {item.setup.businessName && (
+                  <div className="flex gap-1.5">
+                    <dt className="shrink-0 font-semibold text-foreground/70">
+                      Printed name
+                    </dt>
+                    <dd className="truncate">{item.setup.businessName}</dd>
+                  </div>
+                )}
+                {item.setup.logoPath !== undefined && (
+                  <div className="flex gap-1.5">
+                    <dt className="shrink-0 font-semibold text-foreground/70">
+                      Logo
+                    </dt>
+                    <dd>{item.setup.logoPath ? "Uploaded" : "Text only"}</dd>
+                  </div>
+                )}
+              </dl>
+
               <div className="mt-3 flex items-center gap-3">
                 <div className="flex items-center rounded-full border border-border">
                   <button
                     type="button"
-                    aria-label="Decrease quantity"
-                    onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                    aria-label={`Decrease quantity of ${item.standName}`}
+                    onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                     className="px-3 py-1.5 text-foreground hover:text-accent"
                   >
                     −
@@ -64,8 +146,8 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
                   </span>
                   <button
                     type="button"
-                    aria-label="Increase quantity"
-                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                    aria-label={`Increase quantity of ${item.standName}`}
+                    onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                     className="px-3 py-1.5 text-foreground hover:text-accent"
                   >
                     +
@@ -73,15 +155,16 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item.lineId)}
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" /> Remove
                 </button>
               </div>
             </div>
+
             <p className="whitespace-nowrap font-bold text-foreground">
-              {formatMoney(item.price * item.quantity)}
+              {formatMoney(item.priceCents * item.quantity)}
             </p>
           </div>
         ))}
@@ -106,11 +189,18 @@ export function CartView({ tiers }: { tiers: VolumeTierRule[] }) {
             <dt className="text-foreground">Total</dt>
             <dd className="text-foreground">{formatMoney(totals.totalCents)}</dd>
           </div>
+          {monthlyTotal > 0 && (
+            <div className="flex justify-between text-muted-foreground">
+              <dt>Then monthly</dt>
+              <dd>{formatMoney(monthlyTotal)}/mo</dd>
+            </div>
+          )}
         </dl>
 
         {upcoming && (
           <p className="mt-4 rounded-xl border border-accent/40 bg-accent/5 p-3 text-sm text-foreground/85">
-            Add {upcoming.minQuantity - totalItems} more and save {upcoming.discountPercent}%.
+            Add {upcoming.minQuantity - totalItems} more and save{" "}
+            {upcoming.discountPercent}%.
           </p>
         )}
 

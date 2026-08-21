@@ -57,7 +57,9 @@ export default async function StandPage({
 
       <StandDetail
         standName={stand.name}
+        standSlug={stand.slug}
         variants={variants.map((v) => ({
+          id: v.id,
           size: v.size,
           optionCode: v.optionCode,
           priceCents: v.priceCents,
@@ -66,6 +68,12 @@ export default async function StandPage({
         }))}
         mainImageUrl={stand.mainImageUrl}
         brandedImageUrl={stand.brandedImageUrl}
+        destinationLabel={stand.destinationLabel}
+        badge={copy.badge}
+        printedHeadline={stand.printedHeadline || `Review us on ${copy.destination}`}
+        urlLabel={copy.urlLabel}
+        urlPlaceholder={copy.urlPlaceholder}
+        urlHelp={copy.urlHelp}
         tiers={tiers}
       >
         <span className="inline-block rounded-full bg-foreground/85 px-3 py-1 text-[10px] font-bold tracking-wider text-background">

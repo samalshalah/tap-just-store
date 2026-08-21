@@ -18,12 +18,9 @@ import {
 } from "lucide-react";
 import { useCart } from "./CartContext";
 import { useSettings } from "./SettingsProvider";
-import {
-  isProductLogoFallback,
-  isStorageImageUrl,
-  productImageFitClass,
-  productImageUrl,
-} from "@/lib/images";
+import { isStorageImageUrl } from "@/lib/images";
+import { sizeLabel } from "@/lib/sizes";
+import { OPTION_LABELS, type OptionCode } from "@/lib/shop-filter";
 import { generatePickupSlots } from "@/lib/pickup-slots";
 import { computeBestDeal } from "@/lib/deal-engine";
 import type { StoreHoursConfig } from "@/lib/types";
@@ -72,7 +69,19 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
 
   const slots = useMemo(() => generatePickupSlots(schedule), [schedule]);
   const enabledDeals = (settings.deal_rules ?? []).filter((d) => d.enabled);
-  const bestDeal = computeBestDeal(enabledDeals, items, totalPrice);
+  // Deals were written against the old catalogue's product ids. Spend
+  // thresholds still work on a stand cart; a per-product deal simply never
+  // matches, which is the correct behaviour for a product that no longer
+  // exists.
+  const bestDeal = computeBestDeal(
+    enabledDeals,
+    items.map((i) => ({
+      productId: i.standVariantId,
+      price: i.priceCents,
+      quantity: i.quantity,
+    })),
+    totalPrice
+  );
   const discount = bestDeal?.discountAmount ?? 0;
   const finalTotal = Math.max(0, totalPrice - discount);
   const tipAmount = tipPercent != null ? (finalTotal * tipPercent) / 100 : 0;
@@ -110,8 +119,9 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
         body: JSON.stringify({
           ...data,
           items: items.map((i) => ({
-            productId: i.productId,
+            standVariantId: i.standVariantId,
             quantity: i.quantity,
+            setup: i.setup,
           })),
         }),
       });
@@ -185,86 +195,76 @@ export function CheckoutClient({ config, schedule }: CheckoutClientProps) {
             {/* Cart Items */}
             <div className="lg:col-span-7 space-y-6">
               <h2 className="text-xl font-bold text-foreground mb-4 border-b border-border pb-4">
-                Your Gifts ({totalItems})
+                Your stands ({totalItems})
               </h2>
 
               <div className="space-y-4">
-                {items.map((item) => {
-                  const imageUrl = productImageUrl({
-                    imageUrl: item.imageUrl,
-                    imageType: item.imageType,
-                    brandLogoUrl: item.brandLogoUrl,
-                  });
-                  const imageInput = {
-                    imageUrl: item.imageUrl,
-                    imageType: item.imageType,
-                    brandLogoUrl: item.brandLogoUrl,
-                  };
-                  return (
-                    <div
-                      key={item.productId}
-                      className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border/50"
-                    >
-                      <div
-                        className={`relative w-16 h-16 shrink-0 overflow-hidden rounded-lg ${
-                          isProductLogoFallback(imageInput)
-                            ? "bg-white"
-                            : "bg-background"
-                        }`}
-                      >
+                {items.map((item) => (
+                  <div
+                    key={item.lineId}
+                    className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border/50"
+                  >
+                    <div className="relative w-16 h-16 shrink-0 overflow-hidden rounded-lg bg-white">
+                      {item.imageUrl && (
                         <Image
-                          src={imageUrl}
-                          alt={item.name}
+                          src={item.imageUrl}
+                          alt={item.standName}
                           fill
                           sizes="64px"
-                          unoptimized={isStorageImageUrl(imageUrl)}
-                          className={productImageFitClass(imageInput, "p-2")}
+                          unoptimized={isStorageImageUrl(item.imageUrl)}
+                          className="object-cover"
                         />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground truncate">
-                          {item.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {formatMoney(item.price)} each
-                        </p>
-                      </div>
-                      <div className="inline-flex items-center bg-background border border-border rounded-lg overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1)
-                          }
-                          className="w-9 h-9 flex items-center justify-center hover:bg-foreground/5"
-                          aria-label="Decrease"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-8 text-center text-sm font-bold">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity + 1)
-                          }
-                          className="w-9 h-9 flex items-center justify-center hover:bg-foreground/5"
-                          aria-label="Increase"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-foreground truncate">
+                        {item.standName}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {sizeLabel(item.size)} ·{" "}
+                        {OPTION_LABELS[item.optionCode as OptionCode] ??
+                          item.optionCode}{" "}
+                        · {formatMoney(item.priceCents)} each
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        Taps to {item.setup.destinationUrl}
+                      </p>
+                    </div>
+                    <div className="inline-flex items-center bg-background border border-border rounded-lg overflow-hidden">
                       <button
                         type="button"
-                        onClick={() => removeItem(item.productId)}
-                        className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
-                        aria-label={`Remove ${item.name}`}
+                        onClick={() =>
+                          updateQuantity(item.lineId, item.quantity - 1)
+                        }
+                        className="w-9 h-9 flex items-center justify-center hover:bg-foreground/5"
+                        aria-label="Decrease"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-8 text-center text-sm font-bold">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateQuantity(item.lineId, item.quantity + 1)
+                        }
+                        className="w-9 h-9 flex items-center justify-center hover:bg-foreground/5"
+                        aria-label="Increase"
+                      >
+                        <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                  );
-                })}
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.lineId)}
+                      className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label={`Remove ${item.standName}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
 
               {/* Totals */}
