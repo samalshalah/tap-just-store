@@ -18,7 +18,7 @@ export default async function TaxonomyPage() {
   async function save(formData: FormData) {
     "use server";
     await saveTaxonomyRow(formData);
-    revalidatePath("/admin/taxonomy");
+    revalidatePath("/admin/shop-categories");
   }
 
   return (

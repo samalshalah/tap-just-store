@@ -32,7 +32,7 @@ const NAV = [
 
   { type: "section", label: "Products & Catalog" },
   { href: "/admin/stands", label: "Stands", icon: Package },
-  { href: "/admin/taxonomy", label: "Shop categories", icon: Layers },
+  { href: "/admin/shop-categories", label: "Shop categories", icon: Layers },
   { href: "/admin/products", label: "Products (legacy)", icon: ShoppingBag },
   { href: "/admin/products/import", label: "Import Products", icon: ShoppingBag },
   { href: "/admin/categories", label: "Categories", icon: Layers },

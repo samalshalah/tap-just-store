@@ -92,7 +92,7 @@ export async function saveTaxonomyRow(formData: FormData) {
     throw new Error("Unknown taxonomy");
   }
 
-  revalidatePath("/admin/taxonomy");
+  revalidatePath("/admin/shop-categories");
   revalidatePath("/");
   revalidatePath("/shop");
   revalidatePath(kind === "type" ? "/stands/type/[slug]" : "/for/[slug]", "page");
