@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getStandForEdit, saveStand } from "@/lib/stands-admin";
+import {
+  getStandForEdit,
+  saveStand,
+  ensureVariants,
+  deleteStand,
+} from "@/lib/stands-admin";
 import { centsToInput } from "@/lib/money";
+import { AdminMediaField } from "@/components/admin/AdminMediaField";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +33,20 @@ export default async function EditStandPage({
     redirect("/admin/stands");
   }
 
+  async function addMissingVariants() {
+    "use server";
+    await ensureVariants(stand.id);
+    redirect(`/admin/stands/${stand.id}`);
+  }
+
+  async function removeStand() {
+    "use server";
+    await deleteStand(stand.id);
+    redirect("/admin/stands");
+  }
+
   return (
+    <>
     <form action={action} className="max-w-3xl space-y-6">
       <input type="hidden" name="id" value={stand.id} />
 
@@ -65,6 +84,30 @@ export default async function EditStandPage({
               name="destinationLabel"
               defaultValue={stand.destinationLabel}
               className={input}
+            />
+          </Field>
+        </Grid>
+        <Grid>
+          <Field
+            label="Destination kind"
+            hint="Multi-link adds the hosted landing page and its monthly fee"
+          >
+            <select
+              name="destinationKind"
+              defaultValue={stand.destinationKind}
+              className={input}
+            >
+              <option value="direct">Direct — one link, no monthly fee</option>
+              <option value="multilink">
+                Hosted multi-link — landing page, $9.99/mo
+              </option>
+            </select>
+          </Field>
+          <Field label="URL" hint="Fixed after creation so live links keep working">
+            <input
+              value={`/stands/${stand.slug}`}
+              readOnly
+              className={`${input} cursor-not-allowed bg-zinc-50 text-zinc-500`}
             />
           </Field>
         </Grid>
@@ -153,24 +196,28 @@ export default async function EditStandPage({
         </div>
       </Section>
 
-      <Section title="Media" hint="Three slots: main, branded angle, and the front template used for proofs">
-        <Field label="Main image URL">
-          <input name="mainImageUrl" defaultValue={stand.mainImageUrl ?? ""} className={input} />
-        </Field>
-        <Field label="Branded + QR image URL">
-          <input
-            name="brandedImageUrl"
-            defaultValue={stand.brandedImageUrl ?? ""}
-            className={input}
-          />
-        </Field>
-        <Field label="Branded front template URL">
-          <input
-            name="frontTemplateUrl"
-            defaultValue={stand.frontTemplateUrl ?? ""}
-            className={input}
-          />
-        </Field>
+      <Section
+        title="Media"
+        hint="Upload a file or paste a path. Square images look best — the product page shows them in a square frame."
+      >
+        <AdminMediaField
+          name="mainImageUrl"
+          label="Main image"
+          hint="The standard stand. Used on the shop card and as the default view on the product page."
+          defaultValue={stand.mainImageUrl ?? ""}
+        />
+        <AdminMediaField
+          name="brandedImageUrl"
+          label="Branded + QR image"
+          hint="The same stand with a logo, business name and QR printed on it. Shown when a customer picks Branded + QR; leave empty and the product page shows the main image only."
+          defaultValue={stand.brandedImageUrl ?? ""}
+        />
+        <AdminMediaField
+          name="frontTemplateUrl"
+          label="Branded front template"
+          hint="The flat front panel, straight on. This is what the setup flow will print the customer's logo and QR onto for their proof."
+          defaultValue={stand.frontTemplateUrl ?? ""}
+        />
       </Section>
 
       <Section title="SEO" hint="Leave blank to auto-generate from the stand">
@@ -206,7 +253,7 @@ export default async function EditStandPage({
         </Grid>
       </Section>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
           className="rounded-lg bg-blue-600 px-6 py-2.5 font-semibold text-white hover:bg-blue-700"
@@ -219,8 +266,42 @@ export default async function EditStandPage({
         >
           Cancel
         </Link>
+        <Link
+          href={`/stands/${stand.slug}`}
+          target="_blank"
+          className="text-sm font-semibold text-zinc-500 hover:text-zinc-800"
+        >
+          View live page ↗
+        </Link>
       </div>
     </form>
+
+    {/* Outside the editor form: nesting forms is invalid HTML, and these two
+        actions must not carry the unsaved edits above. */}
+    <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-zinc-200 pt-6">
+      <form action={addMissingVariants}>
+        <button
+          type="submit"
+          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-zinc-400"
+        >
+          Add missing size/option rows
+        </button>
+      </form>
+      <form action={removeStand}>
+        <button
+          type="submit"
+          className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+        >
+          Delete this stand
+        </button>
+      </form>
+      <p className="text-xs text-zinc-500">
+        Deleting removes the stand, its prices and its tags for good. To take it off the
+        shop and keep it, set the status to draft instead. Both buttons save nothing else
+        on this page.
+      </p>
+    </div>
+    </>
   );
 }
 

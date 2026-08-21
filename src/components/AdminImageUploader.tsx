@@ -1,55 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
+import { useAdminUpload, adminImageSrc } from "@/lib/use-admin-upload";
 
 interface Props {
   value: string;
   onChange: (newPath: string) => void;
 }
 
-function imageSrc(value: string): string {
-  if (
-    value.startsWith("/images/") ||
-    value.startsWith("/api/storage/") ||
-    value.startsWith("http://") ||
-    value.startsWith("https://")
-  ) {
-    return value;
-  }
-  return `/api/storage${value}`;
-}
-
 export function AdminImageUploader({ value, onChange }: Props) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { upload, uploading, error } = useAdminUpload();
 
   const handleFile = async (file: File) => {
-    setError(null);
-    setUploading(true);
-    try {
-      // Get signed PUT URL from server
-      const tokenRes = await fetch("/api/admin/upload-url", { method: "POST" });
-      if (!tokenRes.ok) {
-        const j = await tokenRes.json().catch(() => ({}));
-        throw new Error(j.error || "Could not get upload URL");
-      }
-      const { uploadUrl, objectPath } = await tokenRes.json();
-
-      // PUT the file directly to GCS
-      const putRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error(`Upload failed (HTTP ${putRes.status})`);
-
-      onChange(objectPath);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
+    const path = await upload(file);
+    if (path) onChange(path);
   };
 
   const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +27,7 @@ export function AdminImageUploader({ value, onChange }: Props) {
         <div className="flex items-start gap-3">
           <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-white border border-zinc-200">
             <img
-              src={imageSrc(value)}
+              src={adminImageSrc(value)}
               alt="preview"
               className="h-full w-full object-contain"
             />

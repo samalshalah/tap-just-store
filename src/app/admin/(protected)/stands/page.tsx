@@ -16,6 +16,12 @@ export default async function AdminStandsPage() {
             {stands.length} total · {active} active · {stands.length - active} draft
           </p>
         </div>
+        <Link
+          href="/admin/stands/new"
+          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          New stand
+        </Link>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
@@ -49,11 +55,13 @@ export default async function AdminStandsPage() {
                 <td className="p-3 text-zinc-600">{s.useCount}</td>
                 <td className="p-3 text-zinc-600">{s.variantCount}</td>
                 <td className="p-3">
-                  {s.hasMedia ? (
-                    <span className="text-emerald-600">✓</span>
-                  ) : (
-                    <span className="text-amber-600">missing</span>
-                  )}
+                  {/* Three separate slots, so a stand with a main image but no
+                      branded shot is visibly different from a finished one. */}
+                  <div className="flex gap-1.5">
+                    <MediaDot ok={s.hasMain} label="Main" />
+                    <MediaDot ok={s.hasBranded} label="Branded" />
+                    <MediaDot ok={s.hasTemplate} label="Template" />
+                  </div>
                 </td>
                 <td className="p-3">
                   <span
@@ -67,6 +75,13 @@ export default async function AdminStandsPage() {
                   </span>
                 </td>
                 <td className="p-3 text-right">
+                  <Link
+                    href={`/stands/${s.slug}`}
+                    target="_blank"
+                    className="mr-2 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+                  >
+                    View
+                  </Link>
                   <Link
                     href={`/admin/stands/${s.id}`}
                     className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-zinc-400"
@@ -83,8 +98,23 @@ export default async function AdminStandsPage() {
       <p className="mt-4 text-xs text-zinc-500">
         Draft stands never appear in the shop and their pages return 404. A stand needs a
         stand type, at least one business use, priced variants and a main image before it
-        should go active.
+        should go active. Media reads Main · Branded · Template — the branded shot is what
+        the product page shows when a customer picks Branded + QR, and the template is the
+        flat front used for print proofs.
       </p>
     </div>
+  );
+}
+
+function MediaDot({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span
+      title={ok ? `${label}: set` : `${label}: missing`}
+      className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+        ok ? "bg-emerald-100 text-emerald-700" : "bg-zinc-100 text-zinc-400"
+      }`}
+    >
+      {label}
+    </span>
   );
 }
