@@ -1,5 +1,10 @@
 import { getSiteSettings } from "@/lib/settings";
-import { getBrands, getCategories, getProducts } from "@/lib/data";
+import {
+  getActiveStands,
+  getBusinessUseCounts,
+  getBusinessUses,
+  getStandTypes,
+} from "@/lib/stands-data";
 import { buildSeoHealthReport } from "@/lib/seo-health";
 import { SeoForm } from "./SeoForm";
 import { SeoHealthPanel } from "./SeoHealthPanel";
@@ -7,13 +12,14 @@ import { SeoHealthPanel } from "./SeoHealthPanel";
 export const dynamic = "force-dynamic";
 
 export default async function AdminStoreSeoPage() {
-  const [settings, products, categories, brands] = await Promise.all([
+  const [settings, stands, types, uses, useCounts] = await Promise.all([
     getSiteSettings(),
-    getProducts({}),
-    getCategories(),
-    getBrands(),
+    getActiveStands(),
+    getStandTypes(),
+    getBusinessUses(),
+    getBusinessUseCounts(),
   ]);
-  const report = buildSeoHealthReport({ settings, products, categories, brands });
+  const report = buildSeoHealthReport({ settings, stands, types, uses, useCounts });
   return (
     <div>
       <h1 className="text-3xl font-bold mb-2">SEO</h1>

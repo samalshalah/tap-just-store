@@ -14,7 +14,6 @@ const DEFAULT_ORDER = [
   "categories",
   "featured",
   "why_us",
-  "testimonials",
   "newsletter",
 ];
 
@@ -23,7 +22,6 @@ const SECTION_LABELS: Record<string, string> = {
   categories: "Categories",
   featured: "Featured carousel",
   why_us: "Why Us",
-  testimonials: "Testimonials",
   newsletter: "Newsletter",
 };
 
@@ -33,7 +31,6 @@ type SubTab =
   | "categories"
   | "featured"
   | "why_us"
-  | "testimonials"
   | "newsletter";
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
@@ -42,7 +39,6 @@ const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "categories", label: "Categories" },
   { id: "featured", label: "Featured Carousel" },
   { id: "why_us", label: "Why Us" },
-  { id: "testimonials", label: "Testimonials" },
   { id: "newsletter", label: "Newsletter" },
 ];
 
@@ -386,38 +382,6 @@ export function HomePageEditor({ settings }: { settings: SiteSettings }) {
               onChange={(e) => update("why_us", { subtitle: e.target.value })}
             />
           </Field>
-        </section>
-      )}
-
-      {tab === "testimonials" && (
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-          <Checkbox
-            label="Show testimonials section"
-            checked={sections.testimonials?.visible !== false}
-            onChange={(e) =>
-              update("testimonials", { visible: e.target.checked })
-            }
-          />
-          <Field label="Label">
-            <Input
-              value={sections.testimonials?.label ?? ""}
-              onChange={(e) =>
-                update("testimonials", { label: e.target.value })
-              }
-            />
-          </Field>
-          <Field label="Title">
-            <Input
-              value={sections.testimonials?.title ?? ""}
-              onChange={(e) =>
-                update("testimonials", { title: e.target.value })
-              }
-            />
-          </Field>
-          <p className="text-xs text-zinc-500">
-            The testimonials themselves are currently static. Editing the
-            quotes is a future feature.
-          </p>
         </section>
       )}
 

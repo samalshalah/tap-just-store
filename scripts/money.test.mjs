@@ -17,12 +17,7 @@ function loadTs(path) {
   const mod = { exports: {} };
   cache.set(path, mod.exports);
   const req = (id) => {
-    if (id === "./potency") return loadTs("src/lib/potency.ts");
-    if (id === "./product-size") return loadTs("src/lib/product-size.ts");
     if (id === "./money") return loadTs("src/lib/money.ts");
-    if (id === "./seo-generator") {
-      return { normalizeImportedProductName: (value) => value.trim() };
-    }
     return require(id);
   };
   Function("module", "exports", "require", js)(mod, mod.exports, req);
@@ -31,7 +26,6 @@ function loadTs(path) {
 }
 
 const { formatMoney, dollarsToCents, centsToInput } = loadTs("src/lib/money.ts");
-const { parseInventoryCsv } = loadTs("src/lib/import-csv-client.ts");
 const { computeBestDeal } = loadTs("src/lib/deal-engine.ts");
 
 test("formatMoney renders cents as dollars with two decimals", () => {
@@ -55,17 +49,6 @@ test("centsToInput round-trips through dollarsToCents", () => {
   for (const cents of [1, 5, 99, 100, 3999, 15999, 100000]) {
     assert.equal(dollarsToCents(centsToInput(cents)), cents);
   }
-});
-
-test("CSV import converts dollar prices to cents", () => {
-  const csv = [
-    '"SKU","Product","Category","Vendor","Available","Current price"',
-    '="A1",="Classic Stand",="NFC Stands",="Tap Rater",="5",="39.99"',
-  ].join("\n");
-  const { rows, errors } = parseInventoryCsv(csv);
-  assert.equal(errors.length, 0);
-  assert.equal(rows.length, 1);
-  assert.equal(rows[0].price, 3999);
 });
 
 test("deal thresholds authored in dollars apply against a cents subtotal", () => {

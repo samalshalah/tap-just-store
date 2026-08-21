@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
 import type { SeoHealthReport, SeoHealthStatus } from "@/lib/seo-health";
-import { SeoRegenerateButton } from "./SeoRegenerateButton";
 
 const STATUS_STYLES: Record<SeoHealthStatus, string> = {
   good: "border-emerald-900 bg-emerald-950/20 text-emerald-300",
@@ -30,7 +29,6 @@ export function SeoHealthPanel({
           </p>
         </div>
         <div className="flex flex-wrap items-start gap-4">
-          <SeoRegenerateButton />
           <div className="text-right">
             <p className="text-3xl font-bold text-amber-400">{report.score}%</p>
             <p className="text-xs text-zinc-500 uppercase tracking-wider">Ready</p>

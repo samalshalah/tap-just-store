@@ -1,8 +1,7 @@
-import { DEFAULTS } from "./defaults";
-import type { Brand, Category, Product } from "./data";
 import type { SiteSettings } from "./types";
-import { getLocalSeoPages } from "./local-seo-pages";
-import { isStaleGeneratedSeoCopy } from "./seo-generator";
+import type { StandListItem } from "./stands-data";
+import type { StandType, BusinessUse } from "./schema";
+import { DEFAULTS } from "./defaults";
 
 export type SeoHealthStatus = "good" | "warning" | "missing";
 
@@ -22,24 +21,42 @@ function hasValue(value: unknown): boolean {
   return typeof value === "string" ? value.trim().length > 0 : Boolean(value);
 }
 
-function isGeneratedPlaceholder(value: string | undefined, fallback: string): boolean {
-  return !value || value.trim() === fallback || value.includes("example.com");
-}
 
+/**
+ * Grade what the site actually sells.
+ *
+ * This used to grade the white-label catalogue — products, categories, brands,
+ * and a set of generated service-area pages, none of which exist any more. The
+ * crawlable surface now is: the stands themselves, the /stands/type/<slug>
+ * pages, and the /for/<slug> business-use pages. Each item below maps to one of
+ * those, so a warning here is something a person can actually go and fix.
+ */
 export function buildSeoHealthReport(input: {
   settings: SiteSettings;
-  products: Product[];
-  categories: Category[];
-  brands: Brand[];
+  stands: StandListItem[];
+  types: StandType[];
+  uses: BusinessUse[];
+  /** Active stands per business-use slug, from getBusinessUseCounts(). */
+  useCounts: Record<string, number>;
 }): SeoHealthReport {
-  const { settings, products, categories, brands } = input;
+  const { settings, stands, types, uses, useCounts } = input;
   const store = settings.store ?? {};
   const seo = settings.seo ?? {};
   const location = settings.location ?? {};
-  const staleProductCount = products.filter((p) =>
-    isStaleGeneratedSeoCopy(p.description)
+
+  const missingSeoTitle = stands.filter((s) => !hasValue(s.stand.seoTitle)).length;
+  const missingSeoDescription = stands.filter(
+    (s) => !hasValue(s.stand.seoDescription)
   ).length;
-  const localSeoPageCount = getLocalSeoPages(settings).length;
+  const missingImage = stands.filter((s) => !hasValue(s.stand.mainImageUrl)).length;
+
+  // A landing page with nothing under it 404s, so an empty taxonomy row is a real fault.
+  const emptyTypes = types
+    .filter((t) => stands.every((s) => s.stand.standTypeId !== t.id))
+    .map((t) => t.name);
+  const emptyUses = uses.filter((u) => (useCounts[u.slug] ?? 0) === 0).map((u) => u.name);
+  const typesMissingHero = types.filter((t) => !hasValue(t.heroImageUrl)).length;
+  const usesMissingHero = uses.filter((u) => !hasValue(u.heroImageUrl)).length;
 
   const items: SeoHealthItem[] = [
     {
@@ -52,18 +69,19 @@ export function buildSeoHealthReport(input: {
     },
     {
       label: "City and state",
-      detail: hasValue(location.city) || hasValue(seo.city)
-        ? `Local SEO city: ${location.city || seo.city}`
-        : "Add the primary city so product and category copy can target local searches.",
-      status: hasValue(location.city) || hasValue(seo.city) ? "good" : "missing",
+      detail:
+        hasValue(location.city) || hasValue(seo.city)
+          ? `Local SEO city: ${location.city || seo.city}`
+          : "Add the primary city so landing copy and schema can target local searches.",
+      status: hasValue(location.city) || hasValue(seo.city) ? "good" : "warning",
       href: "/admin/store/info",
     },
     {
       label: "Canonical domain",
-      detail: isGeneratedPlaceholder(seo.canonical_domain, "")
-        ? "Add the final domain without https:// after DNS is ready."
-        : `Canonical domain: ${seo.canonical_domain}`,
-      status: isGeneratedPlaceholder(seo.canonical_domain, "") ? "warning" : "good",
+      detail: hasValue(seo.canonical_domain)
+        ? `Canonical domain: ${seo.canonical_domain}`
+        : "Add the final domain without https:// after DNS is ready.",
+      status: hasValue(seo.canonical_domain) ? "good" : "warning",
       href: "/admin/store/seo",
     },
     {
@@ -76,56 +94,86 @@ export function buildSeoHealthReport(input: {
     },
     {
       label: "Structured data",
-      detail: seo.auto_structured_data === false
-        ? "JSON-LD structured data is disabled."
-        : "Store and product structured data is enabled.",
+      detail:
+        seo.auto_structured_data === false
+          ? "JSON-LD structured data is disabled, so stands cannot show rich results."
+          : "Store and product structured data is enabled.",
       status: seo.auto_structured_data === false ? "warning" : "good",
       href: "/admin/store/seo",
     },
     {
-      label: "Products",
-      detail: products.length > 0
-        ? `${products.length} products available for sitemap and product SEO.`
-        : "Import products so the site can generate product pages, product schema, and menu content.",
-      status: products.length > 0 ? "good" : "missing",
-      href: "/admin/products/import",
+      label: "Stands live",
+      detail:
+        stands.length > 0
+          ? `${stands.length} active stands are crawlable and in the sitemap.`
+          : "No active stands. The shop, the sitemap, and every landing page are empty.",
+      status: stands.length > 0 ? "good" : "missing",
+      href: "/admin/stands",
     },
     {
-      label: "Product descriptions",
-      detail: products.length === 0
-        ? "No products to check yet."
-        : staleProductCount > 0
-        ? `${staleProductCount}/${products.length} products still contain generic white-label SEO copy.`
-        : `${products.filter((p) => hasValue(p.description)).length}/${products.length} products have localized descriptions.`,
+      label: "Stand SEO titles",
+      detail:
+        stands.length === 0
+          ? "No stands to check yet."
+          : missingSeoTitle === 0
+          ? `All ${stands.length} stands have a custom SEO title.`
+          : `${missingSeoTitle}/${stands.length} stands fall back to the stand name in search results.`,
+      status: stands.length === 0 ? "warning" : missingSeoTitle === 0 ? "good" : "warning",
+      href: "/admin/stands",
+    },
+    {
+      label: "Stand meta descriptions",
+      detail:
+        stands.length === 0
+          ? "No stands to check yet."
+          : missingSeoDescription === 0
+          ? `All ${stands.length} stands have a meta description.`
+          : `${missingSeoDescription}/${stands.length} stands have no meta description, so Google writes its own.`,
       status:
-        products.length === 0
-          ? "warning"
-          : products.every((p) => hasValue(p.description)) && staleProductCount === 0
-          ? "good"
-          : "warning",
-      href: "/admin/products",
+        stands.length === 0 ? "warning" : missingSeoDescription === 0 ? "good" : "warning",
+      href: "/admin/stands",
     },
     {
-      label: "Local SEO pages",
-      detail: `${localSeoPageCount} hidden service-area pages are available for sitemap indexing.`,
-      status: localSeoPageCount >= 5 ? "good" : "warning",
-      href: "/sitemap.xml",
+      label: "Stand images",
+      detail:
+        stands.length === 0
+          ? "No stands to check yet."
+          : missingImage === 0
+          ? "Every stand has a main image for cards, Open Graph, and product schema."
+          : `${missingImage}/${stands.length} stands have no main image.`,
+      status: stands.length === 0 ? "warning" : missingImage === 0 ? "good" : "missing",
+      href: "/admin/stands",
     },
     {
-      label: "Categories",
-      detail: categories.length > 0
-        ? `${categories.length} crawlable category pages can be generated.`
-        : "Create or import categories so Google can crawl category landing pages.",
-      status: categories.length > 0 ? "good" : "missing",
-      href: "/admin/categories",
+      label: "Stand type pages",
+      detail:
+        types.length === 0
+          ? "No stand types, so /stands/type/... has nothing to index."
+          : emptyTypes.length === 0
+          ? `${types.length} type landing pages, all with stands behind them.`
+          : `Empty and returning 404: ${emptyTypes.join(", ")}.`,
+      status: types.length === 0 ? "missing" : emptyTypes.length === 0 ? "good" : "warning",
+      href: "/admin/shop-categories",
     },
     {
-      label: "Brands",
-      detail: brands.length > 0
-        ? `${brands.length} brands available for product filtering and generated copy.`
-        : "Brands are optional, but they help product titles and descriptions look more specific.",
-      status: brands.length > 0 ? "good" : "warning",
-      href: "/admin/brands",
+      label: "Business use pages",
+      detail:
+        uses.length === 0
+          ? "No business uses, so /for/... has nothing to index."
+          : emptyUses.length === 0
+          ? `${uses.length} use landing pages, all with stands behind them.`
+          : `Empty and returning 404: ${emptyUses.join(", ")}.`,
+      status: uses.length === 0 ? "missing" : emptyUses.length === 0 ? "good" : "warning",
+      href: "/admin/shop-categories",
+    },
+    {
+      label: "Landing hero images",
+      detail:
+        typesMissingHero + usesMissingHero === 0
+          ? "Every landing page has a hero image for the page and its Open Graph card."
+          : `${typesMissingHero + usesMissingHero} landing pages have no hero image.`,
+      status: typesMissingHero + usesMissingHero === 0 ? "good" : "warning",
+      href: "/admin/shop-categories",
     },
     {
       label: "Google verification",

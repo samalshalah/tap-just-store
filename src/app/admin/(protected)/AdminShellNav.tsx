@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   BadgePercent,
   BookOpen,
-  Boxes,
   Building2,
   ClipboardList,
   Clock3,
@@ -18,25 +17,16 @@ import {
   Package,
   Plug,
   SearchCheck,
-  ShoppingBag,
-  Tags,
-  Wand2,
 } from "lucide-react";
 
 const NAV = [
   { type: "section", label: "Daily Work" },
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/onboarding", label: "Setup Wizard", icon: Wand2 },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
-  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
 
-  { type: "section", label: "Products & Catalog" },
+  { type: "section", label: "Catalogue" },
   { href: "/admin/stands", label: "Stands", icon: Package },
   { href: "/admin/shop-categories", label: "Shop categories", icon: Layers },
-  { href: "/admin/products", label: "Products (legacy)", icon: ShoppingBag },
-  { href: "/admin/products/import", label: "Import Products", icon: ShoppingBag },
-  { href: "/admin/categories", label: "Categories", icon: Layers },
-  { href: "/admin/brands", label: "Brands", icon: Tags },
 
   { type: "section", label: "Website & SEO" },
   { href: "/admin/store/pages", label: "Website Pages", icon: FileText },
