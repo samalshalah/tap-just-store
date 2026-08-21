@@ -25,7 +25,7 @@ export function UseCard({
   return (
     <Link
       href={href}
-      className="group flex flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_28px_-14px_rgba(16,24,40,0.16)] transition-shadow hover:shadow-[0_1px_2px_rgba(16,24,40,0.05),0_18px_40px_-16px_rgba(16,24,40,0.25)]"
+      className="group flex flex-col overflow-hidden rounded-3xl bg-background shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_28px_-14px_rgba(16,24,40,0.16)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.05),0_22px_44px_-18px_rgba(16,24,40,0.28)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       <div className="min-h-[9.5rem] px-6 pt-6">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-foreground">
@@ -40,23 +40,29 @@ export function UseCard({
       </div>
 
       {imageUrl ? (
-        <div className="relative mt-4 aspect-[1300/651] w-full">
+        // overflow-hidden belongs here, not only on the card: the hover zoom
+        // grows the image past its own box, and without clipping it bled up
+        // over the white text block as a hard line above the fade.
+        <div className="relative mt-4 aspect-[1300/651] w-full overflow-hidden">
           <Image
             src={imageUrl}
             alt=""
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            className="object-cover object-bottom transition-transform duration-500 group-hover:scale-[1.02]"
+            className="object-cover object-bottom transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            style={{ transformOrigin: "bottom center" }}
           />
+          {/* to-background/0 rather than to-transparent: "transparent" is
+              transparent black, so the fade would pass through grey. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background via-background/70 to-background/0"
           />
         </div>
       ) : (
         // Same shape as a photographed card so the grid stays even while the
         // photography is still being shot.
-        <div className="relative mt-4 flex aspect-[1300/651] w-full items-end bg-gradient-to-br from-card to-card/40 p-6">
+        <div className="relative mt-4 flex aspect-[1300/651] w-full items-end overflow-hidden bg-gradient-to-br from-card to-card/40 p-6">
           <div className="flex w-full items-center justify-between text-sm">
             <span className="text-muted-foreground">
               {count} {count === 1 ? "stand" : "stands"}

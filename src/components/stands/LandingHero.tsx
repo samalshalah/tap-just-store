@@ -65,7 +65,7 @@ export function LandingHero({
           </div>
 
           {imageUrl ? (
-            <div className="relative mt-6 aspect-[1300/651] w-full">
+            <div className="relative mt-6 aspect-[1300/651] w-full overflow-hidden">
               <Image
                 src={imageUrl}
                 alt={imageAlt}
@@ -77,7 +77,7 @@ export function LandingHero({
               {/* Fades the top of the photograph into the white card above it. */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background via-background/70 to-background/0"
               />
             </div>
           ) : (
