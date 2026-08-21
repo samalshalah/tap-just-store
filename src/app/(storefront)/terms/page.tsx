@@ -38,10 +38,11 @@ export default function TermsPage() {
       <Clause heading="3. Prices and tax">
         <p>
           Prices are in US dollars and exclude sales tax and shipping, both of which
-          are shown at checkout before you pay. A Standard A5 stand is{" "}
-          {formatMoney(3900)} and a Standard A4 is {formatMoney(4900)}; adding your
-          logo, business name and printed QR is {formatMoney(1000)} more on A5 and{" "}
-          {formatMoney(1500)} more on A4.
+          are shown at checkout before you pay. A Standard Small stand (5.8&Prime; ×
+          8.3&Prime;, A5) is {formatMoney(3900)} and a Standard Large stand (8.3&Prime;
+          × 11.7&Prime;, A4) is {formatMoney(4900)}; adding your logo, business name
+          and printed QR is {formatMoney(1000)} more on the Small and{" "}
+          {formatMoney(1500)} more on the Large.
         </p>
         <p>
           Volume discounts apply to the total number of stands in an order — 15% at

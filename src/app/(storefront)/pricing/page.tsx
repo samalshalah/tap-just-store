@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import { getVolumeTiers } from "@/lib/stands-data";
+import { STAND_SIZES } from "@/lib/sizes";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -10,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 const ROWS = [
-  { size: "A5", dims: "148 × 210 mm", standard: 3900, branded: 4900 },
-  { size: "A4", dims: "210 × 297 mm", standard: 4900, branded: 6500 },
+  { size: STAND_SIZES.a5, standard: 3900, branded: 4900 },
+  { size: STAND_SIZES.a4, standard: 4900, branded: 6500 },
 ];
 
 export default async function PricingPage() {
@@ -37,10 +38,18 @@ export default async function PricingPage() {
           </thead>
           <tbody>
             {ROWS.map((r) => (
-              <tr key={r.size} className="border-t border-border">
+              <tr key={r.size.key} className="border-t border-border">
                 <td className="p-4">
-                  <span className="font-bold text-foreground">{r.size}</span>
-                  <span className="block text-xs text-muted-foreground">{r.dims}</span>
+                  <span className="font-bold text-foreground">{r.size.label}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {r.size.paperName}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {r.size.dims}
+                  </span>
+                  <span className="block text-xs text-muted-foreground/80">
+                    {r.size.compare}
+                  </span>
                 </td>
                 <td className="p-4 font-bold text-foreground">{formatMoney(r.standard)}</td>
                 <td className="p-4 font-bold text-foreground">

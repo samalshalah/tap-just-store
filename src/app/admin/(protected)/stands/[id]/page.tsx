@@ -8,6 +8,7 @@ import {
 } from "@/lib/stands-admin";
 import { centsToInput } from "@/lib/money";
 import { AdminMediaField } from "@/components/admin/AdminMediaField";
+import { sizeLabel } from "@/lib/sizes";
 
 export const dynamic = "force-dynamic";
 
@@ -160,7 +161,10 @@ export default async function EditStandPage({
               className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 p-3"
             >
               <input type="hidden" name="variantIds" value={v.id} />
-              <span className="w-16 text-sm font-bold uppercase text-zinc-900">{v.size}</span>
+              <span className="w-28 text-sm text-zinc-900">
+                <span className="font-bold">{sizeLabel(v.size)}</span>
+                <span className="ml-1.5 uppercase text-zinc-500">{v.size}</span>
+              </span>
               <span className="w-40 text-sm text-zinc-600">
                 {OPTION_LABEL[v.optionCode] ?? v.optionCode}
               </span>

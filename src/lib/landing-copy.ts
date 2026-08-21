@@ -39,7 +39,7 @@ const GENERIC_FAQS = [
   },
   {
     q: "How much is it?",
-    a: "A5 is $39 and A4 is $49 for the Standard finish. Adding your logo, business name and a printed QR is $10 more on A5 and $15 more on A4. Buy 3 and save 15%, 5 and save 20%, 10 and save 25%.",
+    a: "The Small stand (5.8\u2033 \u00d7 8.3\u2033) is $39 and the Large (8.3\u2033 \u00d7 11.7\u2033) is $49 for the Standard finish. Adding your logo, business name and a printed QR is $10 more on the Small and $15 more on the Large. Buy 3 and save 15%, 5 and save 20%, 10 and save 25%.",
   },
 ];
 
@@ -87,7 +87,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "Table, counter, or bill folder",
-        body: "A5 fits a table without crowding it. A4 works on a host stand or a counter where people are already queuing.",
+        body: "The Small stand fits a table without crowding it. The Large works on a host stand or a counter where people are already queuing.",
       },
       {
         title: "The menu that is never out of date",
@@ -122,7 +122,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "Reception and in-room",
-        body: "A4 at the front desk where guests check in, A5 on the desk or nightstand in the room.",
+        body: "The Large at the front desk where guests check in, the Small on the desk or nightstand in the room.",
       },
       {
         title: "TripAdvisor, Google, or your own form",
@@ -184,7 +184,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "A counter you can carry",
-        body: "A5 fits in a document folder or on the dash. Hand it over at sign-off, take it back, drive to the next job.",
+        body: "The Small stand fits in a document folder or on the dash. Hand it over at sign-off, take it back, drive to the next job.",
       },
       {
         title: "Reviews are your advertising",
@@ -215,7 +215,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "Reception and meeting rooms",
-        body: "A4 at reception, A5 on the meeting room table. Both places where a client is sitting with time to spare.",
+        body: "The Large at reception, the Small on the meeting room table. Both places where a client is sitting with time to spare.",
       },
       {
         title: "Consistent with how you present",
@@ -246,7 +246,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "Made for the open house",
-        body: "A4 on the kitchen island with the listing page behind it. Visitors take the details without you chasing them.",
+        body: "The Large stand on the kitchen island with the listing page behind it. Visitors take the details without you chasing them.",
       },
       {
         title: "Follow-up without a clipboard",
@@ -277,7 +277,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "At the mirror or the till",
-        body: "A5 at each station, A4 at the payment counter. Both moments work; the till converts best.",
+        body: "The Small stand at each station, the Large at the payment counter. Both moments work; the till converts best.",
       },
       {
         title: "Rebooking in one tap",
@@ -308,7 +308,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
     points: [
       {
         title: "Built for the stall",
-        body: "A4 stands up on a trestle table and reads from across an aisle. A5 sits next to the card reader.",
+        body: "The Large stands up on a trestle table and reads from across an aisle. The Small sits next to the card reader.",
       },
       {
         title: "Send them to the exact page",
@@ -347,7 +347,7 @@ export const USE_COPY: Record<string, LandingCopy> = {
       },
       {
         title: "Cheap enough to try",
-        body: "$39 for an A5, once, with no monthly fee. If it does nothing you have lost the price of a lunch.",
+        body: "$39 for the Small stand, once, with no monthly fee. If it does nothing you have lost the price of a lunch.",
       },
     ],
     faqs: GENERIC_FAQS,
@@ -433,7 +433,7 @@ export const TYPE_COPY: Record<string, LandingCopy> = {
       },
       {
         title: "Also good on the door",
-        body: "An A4 in the window takes a booking from someone who arrived after closing.",
+        body: "A Large stand in the window takes a booking from someone who arrived after closing.",
       },
     ],
     faqs: GENERIC_FAQS,

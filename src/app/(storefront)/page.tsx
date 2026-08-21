@@ -203,7 +203,7 @@ export default async function HomePage() {
             </p>
             <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
               <li>· You approve a proof before anything is printed</li>
-              <li>· Only {formatMoney(1000)} more on A5</li>
+              <li>· Only {formatMoney(1000)} more on the Small stand</li>
               <li>· Still one payment, still no monthly fee</li>
             </ul>
             <Link

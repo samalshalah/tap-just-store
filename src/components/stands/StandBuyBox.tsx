@@ -3,6 +3,7 @@
 import { formatMoney } from "@/lib/money";
 import type { VolumeTierRule } from "@/lib/pricing";
 import { nextTier } from "@/lib/pricing";
+import { standSize } from "@/lib/sizes";
 import type { StandOptionCode } from "./StandDetail";
 
 export interface VariantLite {
@@ -12,11 +13,6 @@ export interface VariantLite {
   monthlyCents: number;
   active: boolean;
 }
-
-const SIZE_MM: Record<string, string> = {
-  a5: "148 × 210 mm",
-  a4: "210 × 297 mm",
-};
 
 /**
  * Size and finish for a stand.
@@ -62,26 +58,37 @@ export function StandBuyBox({
           Size
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          {sizes.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onSize(s)}
-              aria-pressed={size === s}
-              className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                size === s
-                  ? "border-accent bg-accent/10"
-                  : "border-border hover:border-accent/50"
-              }`}
-            >
-              <span className="block text-sm font-bold text-foreground">
-                {s.toUpperCase()}
-              </span>
-              <span className="block text-xs text-muted-foreground">
-                {SIZE_MM[s] ?? ""}
-              </span>
-            </button>
-          ))}
+          {sizes.map((s) => {
+            const info = standSize(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onSize(s)}
+                aria-pressed={size === s}
+                className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                  size === s
+                    ? "border-accent bg-accent/10"
+                    : "border-border hover:border-accent/50"
+                }`}
+              >
+                <span className="block text-sm font-bold text-foreground">
+                  {info?.label ?? s.toUpperCase()}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {info?.inches ?? ""}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {info?.centimetres ?? ""}
+                </span>
+                {info ? (
+                  <span className="mt-1 block text-xs text-muted-foreground/80">
+                    {info.compare}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </div>
 

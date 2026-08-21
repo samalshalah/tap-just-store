@@ -6,13 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import {
   SIZES,
-  SIZE_LABELS,
   OPTIONS,
   OPTION_LABELS,
   SORTS,
   SORT_LABELS,
   type ShopQuery,
 } from "@/lib/shop-filter";
+import { sizeLabel } from "@/lib/sizes";
 
 interface Option {
   slug: string;
@@ -196,7 +196,7 @@ export function ShopFilters({
     active.push({ label: name, href: build({ use: null }) });
   }
   if (query.size)
-    active.push({ label: SIZE_LABELS[query.size], href: build({ size: null }) });
+    active.push({ label: sizeLabel(query.size), href: build({ size: null }) });
   if (query.option)
     active.push({
       label: OPTION_LABELS[query.option],
@@ -235,7 +235,7 @@ export function ShopFilters({
             </Chip>
             {SIZES.map((s) => (
               <Chip key={s} href={build({ size: s })} active={query.size === s}>
-                {SIZE_LABELS[s]}
+                {sizeLabel(s)}
               </Chip>
             ))}
           </div>

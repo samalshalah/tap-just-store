@@ -28,10 +28,8 @@ export type OptionCode = (typeof OPTIONS)[number];
 export const SORTS = ["featured", "price-asc", "price-desc", "name"] as const;
 export type SortKey = (typeof SORTS)[number];
 
-export const SIZE_LABELS: Record<Size, string> = {
-  a5: "A5",
-  a4: "A4",
-};
+// Size labels live in sizes.ts, not here. This module is deliberately free of
+// every runtime import so it can be loaded straight into the test runner.
 
 export const OPTION_LABELS: Record<OptionCode, string> = {
   standard_direct: "Standard",

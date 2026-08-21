@@ -106,7 +106,7 @@ export default async function NewStandPage() {
             </option>
           </select>
           <span className="mt-1 block text-xs text-zinc-500">
-            Multi-link also creates the hosted A5 and A4 rows.
+            Multi-link also creates the hosted Small (A5) and Large (A4) rows.
           </span>
         </label>
       </section>
