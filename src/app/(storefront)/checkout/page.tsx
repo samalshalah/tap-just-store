@@ -1,38 +1,31 @@
 import type { Metadata } from "next";
 import { getSiteSettings } from "@/lib/settings";
+import { getVolumeTiers } from "@/lib/stands-data";
+import { isStripeConfigured } from "@/lib/stripe";
 import { CheckoutClient } from "@/components/CheckoutClient";
-import { DEFAULTS } from "@/lib/defaults";
-import { checkoutTermsText, complianceFooterText } from "@/lib/compliance";
-import { dollarsToCents } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Complete your order for local pickup.",
-  robots: { index: false, follow: false }, // Don't index transactional page
+  description: "Complete your order.",
+  robots: { index: false, follow: false },
   alternates: { canonical: "/checkout" },
 };
 
 export default async function CheckoutPage() {
-  const settings = await getSiteSettings();
-
+  const [settings, tiers] = await Promise.all([getSiteSettings(), getVolumeTiers()]);
   const cc = settings.checkout_config ?? {};
-  const ord = settings.ordering ?? {};
-  const schedule = settings.store_hours;
 
   return (
     <CheckoutClient
       config={{
-        ordersPaused: ord.pause_all_orders ?? false,
+        ordersPaused: settings.ordering?.pause_all_orders ?? false,
         showNotes: cc.order_notes ?? true,
-        showTerms: cc.terms_required ?? true,
-        termsText: cc.terms_text ?? checkoutTermsText(settings),
-        minOrder: dollarsToCents(cc.min_order_amount ?? 0),
-        tipEnabled: cc.tipping_enabled ?? false,
-        tipPresets: cc.tip_presets ?? [10, 15, 20],
-        cashOnlyNotice: DEFAULTS.cashOnlyNotice,
-        compliantFooter: complianceFooterText(settings),
+        // Whether payments are switched on at all. Better to say so plainly
+        // than to let someone fill in an address and fail at the last step.
+        paymentsReady: isStripeConfigured(),
+        publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
       }}
-      schedule={schedule}
+      tiers={tiers}
     />
   );
 }

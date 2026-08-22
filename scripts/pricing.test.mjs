@@ -86,3 +86,39 @@ test("nextTier stops once the top tier is reached", () => {
   assert.equal(nextTier(3).minQuantity, 5);
   assert.equal(nextTier(10), null);
 });
+
+// ---------------------------------------------------------------- shipping
+// Added with Phase 03. Postage is charged on the discounted total, not the
+// subtotal, because "free shipping over $49" has to be true of the number the
+// customer is watching.
+
+const { shippingCentsFor, SHIPPING_FLAT_CENTS } = loadTs("src/lib/pricing.ts");
+
+test("postage is flat below the threshold and free at or above it", () => {
+  assert.equal(shippingCentsFor(0), SHIPPING_FLAT_CENTS);
+  assert.equal(shippingCentsFor(3900), SHIPPING_FLAT_CENTS);
+  assert.equal(shippingCentsFor(FREE_SHIPPING_CENTS - 1), SHIPPING_FLAT_CENTS);
+  assert.equal(shippingCentsFor(FREE_SHIPPING_CENTS), 0);
+  assert.equal(shippingCentsFor(20000), 0);
+});
+
+test("one Small stand pays postage; adding branding to it does not", () => {
+  // This is the whole point of where the threshold sits.
+  assert.equal(shippingCentsFor(3900), 495, "a $39 Standard Small pays postage");
+  assert.equal(shippingCentsFor(4900), 0, "a $49 branded Small ships free");
+});
+
+test("a volume discount can push an order back under the threshold", () => {
+  // Three $39 stands are $117, less 15% is $99.45 — still free. But the rule
+  // must be applied to the discounted figure, not the subtotal, or a
+  // discounted order would be quoted free shipping it did not earn.
+  const totals = computeCartTotals([{ priceCents: 3900, quantity: 3 }]);
+  assert.equal(totals.discountPercent, 15);
+  assert.equal(totals.totalCents, 9945);
+  assert.equal(shippingCentsFor(totals.totalCents), 0);
+
+  // Two $19 hypothetical stands: $38, no tier, under the threshold.
+  const small = computeCartTotals([{ priceCents: 1900, quantity: 2 }]);
+  assert.equal(small.discountPercent, 0);
+  assert.equal(shippingCentsFor(small.totalCents), SHIPPING_FLAT_CENTS);
+});

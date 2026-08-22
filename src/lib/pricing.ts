@@ -25,8 +25,32 @@ export const DEFAULT_VOLUME_TIERS: VolumeTierRule[] = [
 /** Orders at or above this quantity are quoted, not checked out. */
 export const CUSTOM_QUOTE_QUANTITY = 25;
 
-/** Free shipping threshold — set so that adding branding to one A5 reaches it. */
+/**
+ * Free shipping threshold — set so that adding branding to one Small stand
+ * reaches it. A $39 stand ships for $4.95; a $49 branded one ships free, which
+ * makes the upgrade feel like it pays for itself.
+ */
 export const FREE_SHIPPING_CENTS = 4900;
+
+/**
+ * Flat postage below the threshold.
+ *
+ * A stand is 35g, so ten of them still go in one light package — USPS Ground
+ * Advantage territory. One flat rate is honest at this weight and avoids a
+ * carrier API call on every keystroke in the address form.
+ */
+export const SHIPPING_FLAT_CENTS = 495;
+
+/**
+ * Postage for an order, from the amount after the volume discount.
+ *
+ * Charged on the discounted total rather than the subtotal on purpose: the
+ * customer is told "free shipping over $49", and the number they are watching
+ * go up is the one they are being charged.
+ */
+export function shippingCentsFor(discountedTotalCents: number): number {
+  return discountedTotalCents >= FREE_SHIPPING_CENTS ? 0 : SHIPPING_FLAT_CENTS;
+}
 
 /** The tier that applies at a given total quantity, or null below the first tier. */
 export function tierForQuantity(

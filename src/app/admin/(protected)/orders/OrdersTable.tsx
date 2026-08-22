@@ -4,6 +4,17 @@ import { useState, useTransition } from "react";
 import { setOrderStatus } from "@/lib/admin-mutations-client";
 import type { Order, OrderItem } from "@/lib/data";
 import { formatMoney } from "@/lib/money";
+import { sizeLabel } from "@/lib/sizes";
+import { OPTION_LABELS, type OptionCode } from "@/lib/shop-filter";
+
+/** Whether the money arrived — a different question from fulfilment. */
+const PAYMENT_COLORS: Record<string, string> = {
+  unpaid: "border-zinc-700 bg-zinc-800 text-zinc-400",
+  processing: "border-blue-800 bg-blue-950/40 text-blue-300",
+  paid: "border-emerald-800 bg-emerald-950/40 text-emerald-300",
+  failed: "border-red-800 bg-red-950/40 text-red-300",
+  refunded: "border-amber-800 bg-amber-950/40 text-amber-300",
+};
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-900/30 text-amber-300 border-amber-800",
@@ -78,8 +89,14 @@ export function OrdersTable({ orders }: Props) {
                   timeZone: "America/New_York",
                 })}
               </div>
-              <div className="hidden md:block text-sm text-zinc-300 whitespace-nowrap">
-                {o.preferredPickupTime}
+              <div className="hidden md:block whitespace-nowrap">
+                <span
+                  className={`rounded-full border px-2.5 py-0.5 text-xs ${
+                    PAYMENT_COLORS[o.paymentStatus] ?? PAYMENT_COLORS.unpaid
+                  }`}
+                >
+                  {o.paymentStatus}
+                </span>
               </div>
               <div className="font-bold text-amber-500 whitespace-nowrap">
                 {formatMoney(o.totalPrice)}
@@ -99,18 +116,99 @@ export function OrdersTable({ orders }: Props) {
                     <h3 className="text-sm font-semibold text-zinc-300 mb-2">
                       Items
                     </h3>
-                    <ul className="space-y-1 text-sm">
+                    {/*
+                      This is the production queue. Everything needed to make
+                      the stand is here — the link to program, the name to
+                      print, whether a logo was uploaded — because the
+                      alternative is emailing the customer to ask, which is
+                      exactly what this build is designed to avoid.
+                    */}
+                    <ul className="space-y-3 text-sm">
                       {o.items.map((it) => (
-                        <li key={it.id} className="flex justify-between">
-                          <span>
-                            {it.quantity} × {it.productName}
-                          </span>
-                          <span className="text-zinc-400">
-                            ${it.pricePerItem * it.quantity}
-                          </span>
+                        <li key={it.id} className="rounded border border-zinc-800 p-2.5">
+                          <div className="flex justify-between gap-3">
+                            <span className="font-semibold">
+                              {it.quantity} × {it.standName}
+                            </span>
+                            <span className="whitespace-nowrap text-zinc-400">
+                              {formatMoney(it.priceCents * it.quantity)}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-xs text-zinc-500">
+                            {sizeLabel(it.size)} ·{" "}
+                            {OPTION_LABELS[it.optionCode as OptionCode] ?? it.optionCode}
+                          </p>
+                          <p className="mt-1.5 break-all text-xs text-zinc-400">
+                            <span className="text-zinc-500">Program: </span>
+                            {it.destinationUrl}
+                          </p>
+                          {it.businessName && (
+                            <p className="text-xs text-zinc-400">
+                              <span className="text-zinc-500">Print name: </span>
+                              {it.businessName}
+                            </p>
+                          )}
+                          {it.optionCode !== "standard_direct" && (
+                            <p className="text-xs text-zinc-400">
+                              <span className="text-zinc-500">Logo: </span>
+                              {it.logoPath ? (
+                                <a
+                                  href={`/api/storage${it.logoPath}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 underline"
+                                >
+                                  download
+                                </a>
+                              ) : (
+                                "text only"
+                              )}
+                            </p>
+                          )}
                         </li>
                       ))}
                     </ul>
+
+                    <h3 className="mt-4 mb-1.5 text-sm font-semibold text-zinc-300">
+                      Ship to
+                    </h3>
+                    <p className="text-sm text-zinc-400">
+                      {o.shipName}
+                      <br />
+                      {o.shipLine1}
+                      {o.shipLine2 && <>, {o.shipLine2}</>}
+                      <br />
+                      {o.shipCity}, {o.shipState} {o.shipPostalCode}
+                    </p>
+
+                    <dl className="mt-4 space-y-0.5 text-xs text-zinc-400">
+                      <div className="flex justify-between">
+                        <dt>Subtotal</dt>
+                        <dd>{formatMoney(o.subtotalCents)}</dd>
+                      </div>
+                      {o.discountCents > 0 && (
+                        <div className="flex justify-between">
+                          <dt>{o.discountLabel || "Discount"}</dt>
+                          <dd>−{formatMoney(o.discountCents)}</dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <dt>Shipping</dt>
+                        <dd>
+                          {o.shippingCents === 0
+                            ? "Free"
+                            : formatMoney(o.shippingCents)}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt>Tax</dt>
+                        <dd>{formatMoney(o.taxCents)}</dd>
+                      </div>
+                      <div className="flex justify-between font-semibold text-zinc-200">
+                        <dt>Charged</dt>
+                        <dd>{formatMoney(o.totalPrice)}</dd>
+                      </div>
+                    </dl>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-zinc-300 mb-2">

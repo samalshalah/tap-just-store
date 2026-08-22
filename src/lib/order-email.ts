@@ -9,13 +9,40 @@ type OrderEmailOrder = Pick<
   | "customerName"
   | "customerEmail"
   | "customerPhone"
-  | "preferredPickupTime"
   | "notes"
+  | "subtotalCents"
+  | "discountCents"
+  | "discountLabel"
+  | "shippingCents"
+  | "taxCents"
   | "totalPrice"
+  | "shipName"
+  | "shipLine1"
+  | "shipLine2"
+  | "shipCity"
+  | "shipState"
+  | "shipPostalCode"
   | "createdAt"
 > & {
-  items: Pick<OrderItem, "productName" | "quantity" | "pricePerItem">[];
+  items: Pick<
+    OrderItem,
+    "standName" | "size" | "optionCode" | "quantity" | "priceCents" | "destinationUrl"
+  >[];
 };
+
+/** "123 Main St, Apt 4, Washington, DC 20001" on one line. */
+function formatShippingAddress(order: OrderEmailOrder): string {
+  return [
+    order.shipName,
+    order.shipLine1,
+    order.shipLine2,
+    [order.shipCity, order.shipState].filter(Boolean).join(", "),
+    order.shipPostalCode,
+  ]
+    .map((part) => (part ?? "").trim())
+    .filter(Boolean)
+    .join("\n");
+}
 
 export interface OrderEmailMessage {
   from: string;
@@ -116,7 +143,7 @@ function buildItemsText(order: OrderEmailOrder): string {
   return order.items
     .map(
       (item) =>
-        `- ${item.quantity} x ${item.productName} (${money(item.pricePerItem)} each)`
+        `- ${item.quantity} x ${item.standName} (${money(item.priceCents)} each) -> ${item.destinationUrl}`
     )
     .join("\n");
 }
@@ -127,13 +154,13 @@ function buildItemsHtml(order: OrderEmailOrder): string {
       (item) => `
         <tr>
           <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;">
-            ${escapeHtml(item.productName)}
+            ${escapeHtml(item.standName)}
           </td>
           <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:center;">
             ${item.quantity}
           </td>
           <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;">
-            ${money(item.pricePerItem)}
+            ${money(item.priceCents)}
           </td>
         </tr>`
     )
@@ -183,24 +210,21 @@ export function buildOrderEmailMessages({
   );
   const primaryStoreRecipient = storeRecipients[0];
   const storePhone = firstPresent(settings.contact?.phone, settings.location?.phone, settings.store?.phone);
-  const pickupAddress = firstPresent(settings.location?.address, settings.store?.address);
   const from = `${storeName} <${fromAddress}>`;
   const safeName = escapeHtml(storeName);
   const safeCode = escapeHtml(order.confirmationCode);
-  const safePickupTime = escapeHtml(order.preferredPickupTime);
+  const safeAddress = escapeHtml(formatShippingAddress(order));
   const safeCustomerName = escapeHtml(order.customerName);
   const safeCustomerPhone = escapeHtml(order.customerPhone);
   const safeNotes = escapeHtml(clean(order.notes) || "None");
   const safeOrderUrl = escapeHtml(orderUrl);
-  const safePickupAddress = escapeHtml(pickupAddress);
   const itemRows = buildItemsHtml(order);
   const itemText = buildItemsText(order);
 
   const customerText = [
-    `${storeName} received your pickup order.`,
+    `${storeName} received your order.`,
     `Confirmation code: ${order.confirmationCode}`,
-    `Pickup time: ${order.preferredPickupTime}`,
-    pickupAddress ? `Pickup address: ${pickupAddress}` : "",
+    `Ships to:\n${formatShippingAddress(order)}`,
     storePhone ? `Store phone: ${storePhone}` : "",
     "",
     "Items:",
@@ -209,23 +233,17 @@ export function buildOrderEmailMessages({
     `Total Price: ${money(order.totalPrice)}`,
     `View order: ${orderUrl}`,
     "",
-    "Please bring a valid government-issued ID for pickup.",
   ]
     .filter(Boolean)
     .join("\n");
 
   const customerHtml = `
     <div style="font-family:Arial,sans-serif;color:#111827;line-height:1.5;">
-      <h1 style="font-size:22px;margin:0 0 12px;">${safeName} received your pickup order</h1>
+      <h1 style="font-size:22px;margin:0 0 12px;">${safeName} received your order</h1>
       <p style="margin:0 0 16px;">Thanks ${safeCustomerName}. Your confirmation code is <strong>${safeCode}</strong>.</p>
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         <tbody>
-          <tr><td style="padding:4px 0;color:#6b7280;">Pickup time</td><td style="padding:4px 0;text-align:right;">${safePickupTime}</td></tr>
-          ${
-            safePickupAddress
-              ? `<tr><td style="padding:4px 0;color:#6b7280;">Pickup address</td><td style="padding:4px 0;text-align:right;">${safePickupAddress}</td></tr>`
-              : ""
-          }
+          <tr><td style="padding:4px 0;color:#6b7280;">Ships to</td><td style="padding:4px 0;text-align:right;white-space:pre-line;">${safeAddress}</td></tr>
           ${
             storePhone
               ? `<tr><td style="padding:4px 0;color:#6b7280;">Store phone</td><td style="padding:4px 0;text-align:right;">${escapeHtml(storePhone)}</td></tr>`
@@ -246,14 +264,13 @@ export function buildOrderEmailMessages({
       </table>
       <p style="font-size:18px;margin:18px 0;"><strong>Total Price: ${money(order.totalPrice)}</strong></p>
       <p><a href="${safeOrderUrl}" style="color:#047857;font-weight:bold;">View your order</a></p>
-      <p style="margin-top:18px;color:#6b7280;font-size:13px;">Please bring a valid government-issued ID for pickup.</p>
     </div>`;
 
   const messages: OrderEmailMessage[] = [
     {
       from,
       to: customerEmail,
-      subject: `${storeName} pickup order ${order.confirmationCode}`,
+      subject: `${storeName} order ${order.confirmationCode}`,
       html: customerHtml,
       text: customerText,
       reply_to: primaryStoreRecipient,
@@ -262,12 +279,12 @@ export function buildOrderEmailMessages({
 
   if (storeRecipients.length > 0) {
     const storeText = [
-      `New pickup order for ${storeName}`,
+      `New order for ${storeName}`,
       `Confirmation code: ${order.confirmationCode}`,
       `Customer: ${order.customerName}`,
       `Email: ${customerEmail}`,
       `Phone: ${order.customerPhone}`,
-      `Pickup time: ${order.preferredPickupTime}`,
+      `Ships to:\n${formatShippingAddress(order)}`,
       `Notes: ${clean(order.notes) || "None"}`,
       "",
       "Items:",
@@ -279,14 +296,14 @@ export function buildOrderEmailMessages({
 
     const storeHtml = `
       <div style="font-family:Arial,sans-serif;color:#111827;line-height:1.5;">
-        <h1 style="font-size:22px;margin:0 0 12px;">New pickup order</h1>
+        <h1 style="font-size:22px;margin:0 0 12px;">New order</h1>
         <p style="margin:0 0 16px;"><strong>${safeCode}</strong> for ${safeName}</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0;">
           <tbody>
             <tr><td style="padding:4px 0;color:#6b7280;">Customer</td><td style="padding:4px 0;text-align:right;">${safeCustomerName}</td></tr>
             <tr><td style="padding:4px 0;color:#6b7280;">Email</td><td style="padding:4px 0;text-align:right;">${escapeHtml(customerEmail)}</td></tr>
             <tr><td style="padding:4px 0;color:#6b7280;">Phone</td><td style="padding:4px 0;text-align:right;">${safeCustomerPhone}</td></tr>
-            <tr><td style="padding:4px 0;color:#6b7280;">Pickup time</td><td style="padding:4px 0;text-align:right;">${safePickupTime}</td></tr>
+            <tr><td style="padding:4px 0;color:#6b7280;">Ships to</td><td style="padding:4px 0;text-align:right;white-space:pre-line;">${safeAddress}</td></tr>
             <tr><td style="padding:4px 0;color:#6b7280;">Notes</td><td style="padding:4px 0;text-align:right;">${safeNotes}</td></tr>
           </tbody>
         </table>
@@ -309,7 +326,7 @@ export function buildOrderEmailMessages({
       messages.push({
         from,
         to: storeRecipient,
-        subject: `New pickup order ${order.confirmationCode} - ${storeName}`,
+        subject: `New order ${order.confirmationCode} - ${storeName}`,
         html: storeHtml,
         text: storeText,
         reply_to: customerEmail,

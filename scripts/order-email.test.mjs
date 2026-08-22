@@ -30,19 +30,33 @@ const baseOrder = {
   customerName: "Sam Customer",
   customerEmail: "customer@example.com",
   customerPhone: "(202) 555-0100",
-  preferredPickupTime: "Today after 5 PM",
   notes: "Please call when ready.",
   status: "pending",
-  totalPrice: 60,
+  subtotalCents: 7800,
+  discountCents: 0,
+  discountLabel: "",
+  shippingCents: 0,
+  taxCents: 468,
+  totalPrice: 8268,
+  shipName: "Sam Customer",
+  shipLine1: "123 Main St",
+  shipLine2: "Apt 4",
+  shipCity: "Washington",
+  shipState: "DC",
+  shipPostalCode: "20001",
+  shipCountry: "US",
   createdAt: new Date("2026-05-30T14:00:00Z"),
   items: [
     {
       id: 1,
       orderId: 123,
-      productId: 10,
-      productName: "Blue Dream CBD",
+      standVariantId: 10,
+      standName: "Google Review Stand",
+      size: "a5",
+      optionCode: "standard_direct",
       quantity: 2,
-      pricePerItem: 30,
+      priceCents: 3900,
+      destinationUrl: "https://g.page/r/CabcDEF123/review",
     },
   ],
 };
@@ -63,7 +77,7 @@ const baseSettings = {
   },
 };
 
-test("builds customer and store pickup emails when enabled", () => {
+test("builds customer and store order emails when enabled", () => {
   const messages = mod.buildOrderEmailMessages({
     settings: baseSettings,
     order: baseOrder,
@@ -75,7 +89,11 @@ test("builds customer and store pickup emails when enabled", () => {
   assert.equal(messages[0].to, "customer@example.com");
   assert.equal(messages[1].to, "orders@example.com");
   assert.match(messages[0].subject, /JC-ABC123/);
-  assert.match(messages[0].html, /Blue Dream CBD/);
+  assert.match(messages[0].html, /Google Review Stand/);
+  // The shipping address has to be on the customer's copy — it is the one
+  // thing they will come back to check.
+  assert.match(messages[0].html, /123 Main St/);
+  assert.match(messages[0].html, /Washington, DC/);
   assert.match(messages[0].html, /https:\/\/justchilldc\.com\/order\/123/);
   assert.equal(messages[1].reply_to, "customer@example.com");
 });

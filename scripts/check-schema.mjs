@@ -34,6 +34,26 @@ const EXPECTED = {
   stand_business_uses: ["stand_id", "business_use_id"],
   volume_tiers: ["id", "min_quantity", "discount_percent", "label"],
   admin_login_attempts: ["id", "ip", "succeeded", "attempted_at"],
+  orders: [
+    "id", "confirmation_code", "customer_name", "customer_email",
+    "customer_phone", "notes", "status", "total_price", "created_at",
+    "updated_at",
+    // Amounts are stored per component so a dispute or a tax filing can be
+    // answered from the row rather than reconstructed.
+    "subtotal_cents", "discount_cents", "discount_label", "shipping_cents",
+    "tax_cents",
+    "ship_name", "ship_line1", "ship_line2", "ship_city", "ship_state",
+    "ship_postal_code", "ship_country",
+    "payment_status", "stripe_payment_intent_id", "stripe_tax_calculation_id",
+    "paid_at",
+  ],
+  order_items: [
+    "id", "order_id", "stand_variant_id", "stand_name", "size", "option_code",
+    "quantity", "price_cents",
+    // What gets programmed and printed. Without these the production queue
+    // cannot make the stand.
+    "destination_url", "business_name", "logo_path",
+  ],
 };
 
 /** Constraints and indexes that must exist, whatever the columns say. */
@@ -43,6 +63,11 @@ const EXPECTED_INDEXES = [
   "order_items_order_id_idx",
   "stands_status_sort_idx",
   "admin_login_attempts_ip_time_idx",
+  "orders_status_idx",
+  "orders_payment_status_idx",
+  // The idempotency guarantee: one order per Stripe payment intent. Without
+  // this a retried webhook is a duplicate order.
+  "orders_payment_intent_key",
 ];
 
 const connectionString = process.argv[2] || process.env.DATABASE_URL;
