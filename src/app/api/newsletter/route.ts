@@ -1,16 +1,19 @@
-/**
- * /api/newsletter — newsletter signup endpoint.
- *
- * Stub: logs the signup and returns success. To wire this to Mailchimp,
- * read settings.integrations.mailchimp_audience_id and post to the
- * Mailchimp API here. Env vars: MAILCHIMP_API_KEY, MAILCHIMP_DC.
- */
-
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
 import { rateLimit, clientKey, tooManyRequests } from "@/lib/rate-limit";
 
-const Body = z.object({ email: z.string().email() });
+/**
+ * /api/newsletter — newsletter signup.
+ *
+ * Was a stub that logged and returned success, with a TODO about Mailchimp.
+ * The address is now stored, so the list exists and is exportable whether or
+ * not an email platform is ever connected. Connecting one later becomes a
+ * one-off import rather than a list that was never collected.
+ */
+
+const Body = z.object({ email: z.string().trim().email().max(200) });
 
 export async function POST(req: Request) {
   const ip = clientKey(req);
@@ -22,18 +25,28 @@ export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
   const parsed = Body.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid email" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  // TODO(mailchimp): once admin/store/integrations has mailchimp_api_key
-  // configured, fetch it from settings and POST to:
-  //   https://${dc}.api.mailchimp.com/3.0/lists/${audienceId}/members
-  // with { email_address, status: "subscribed" }.
-  // The address itself stays out of the logs.
-  console.log("[newsletter] signup received");
+  try {
+    // Signing up twice is not an error to a person, so it is not one here.
+    // The unique index is on lower(email), which Drizzle's typed
+    // onConflictDoUpdate cannot target — it wants plain columns — so the
+    // upsert is written out. Re-subscribing also clears a previous opt-out,
+    // which is what a second signup means.
+    await db.execute(sql`
+      insert into newsletter_subscribers (email)
+      values (${parsed.data.email})
+      on conflict (lower(email))
+      do update set unsubscribed_at = null
+    `);
+  } catch (err) {
+    console.error("[newsletter] could not store signup:", err);
+    return NextResponse.json(
+      { error: "We could not sign you up just now. Please try again." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

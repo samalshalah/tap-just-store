@@ -1,9 +1,13 @@
 import Link from "next/link";
-import { sql, count, gte } from "drizzle-orm";
+import { sql, count, gte, eq } from "drizzle-orm";
 import { db, ordersTable } from "@/lib/db";
+import { standVariantsTable } from "@/lib/schema/standVariants";
+import { standsTable } from "@/lib/schema/stands";
 import { isLocalPreviewMode } from "@/lib/preview";
 import { getActiveStands, catalogLoadFailed } from "@/lib/stands-data";
 import { formatMoney } from "@/lib/money";
+import { sizeLabel } from "@/lib/sizes";
+import { OPTION_LABELS, type OptionCode } from "@/lib/shop-filter";
 
 /**
  * The dashboard counted the legacy products table and, when it found nothing,
@@ -12,12 +16,42 @@ import { formatMoney } from "@/lib/money";
  */
 async function getDashboardStats() {
   if (isLocalPreviewMode()) {
-    return { standCount: 0, pendingOrders: 0, todayOrders: 0, todayRevenue: 0 };
+    return {
+      standCount: 0,
+      pendingOrders: 0,
+      todayOrders: 0,
+      todayRevenue: 0,
+      lowStock: [] as { standName: string; size: string; optionCode: string; left: number }[],
+    };
   }
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const stands = await getActiveStands();
+
+  // Only counted variants can be low. A null stock is "not tracked" and must
+  // never raise an alarm about a number nobody is keeping.
+  let lowStock: { standName: string; size: string; optionCode: string; left: number }[] = [];
+  try {
+    lowStock = await db
+      .select({
+        standName: standsTable.name,
+        size: standVariantsTable.size,
+        optionCode: standVariantsTable.optionCode,
+        left: standVariantsTable.stockQuantity,
+      })
+      .from(standVariantsTable)
+      .innerJoin(standsTable, eq(standsTable.id, standVariantsTable.standId))
+      .where(
+        sql`${standVariantsTable.stockQuantity} is not null
+            and ${standVariantsTable.active} = true
+            and ${standsTable.status} = 'active'
+            and ${standVariantsTable.stockQuantity} <= ${standVariantsTable.lowStockThreshold}`
+      )
+      .limit(20) as typeof lowStock;
+  } catch (err) {
+    console.error("[admin/dashboard] low stock check failed:", err);
+  }
 
   try {
     const [pendingOrders] = await db
@@ -42,6 +76,7 @@ async function getDashboardStats() {
       pendingOrders: pendingOrders.n,
       todayOrders: todayOrders.n,
       todayRevenue: revenue.total ?? 0,
+      lowStock,
     };
   } catch (err) {
     console.error("[admin/dashboard] order stats failed:", err);
@@ -50,6 +85,7 @@ async function getDashboardStats() {
       pendingOrders: 0,
       todayOrders: 0,
       todayRevenue: 0,
+      lowStock,
     };
   }
 }
@@ -75,6 +111,30 @@ export default async function AdminDashboard() {
           </p>
         </div>
       ) : null}
+
+      {stats.lowStock.length > 0 && (
+        <div className="mb-8 rounded-xl border border-amber-700 bg-amber-950/30 p-4">
+          <p className="font-semibold text-amber-200">
+            Running low on {stats.lowStock.length}{" "}
+            {stats.lowStock.length === 1 ? "variant" : "variants"}
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-amber-300/90">
+            {stats.lowStock.map((v) => (
+              <li key={`${v.standName}-${v.size}-${v.optionCode}`}>
+                {v.standName} · {sizeLabel(v.size)} ·{" "}
+                {OPTION_LABELS[v.optionCode as OptionCode] ?? v.optionCode} —{" "}
+                <strong>{v.left} left</strong>
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="/admin/stands"
+            className="mt-3 inline-block text-sm font-semibold text-amber-200 underline"
+          >
+            Update stock
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         <Card label="Today's Orders" value={stats.todayOrders} />

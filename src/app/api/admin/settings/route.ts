@@ -17,7 +17,6 @@ const ALLOWED_KEYS = new Set([
   "checkout_config",
   "ordering",
   "faqs",
-  "deal_rules",
   "maintenance_mode",
   "maintenance_message",
   "integrations",

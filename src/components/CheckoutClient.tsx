@@ -366,9 +366,14 @@ export function CheckoutClient({
               <Link href="/warranty" className="font-semibold text-accent hover:underline">
                 {LEGAL.warrantyName}
               </Link>
-              . Branded stands are printed to order and cannot be returned.{" "}
+              . Branded stands are printed to order and cannot be returned. By
+              placing this order you accept our{" "}
+              <Link href="/terms" className="font-semibold text-accent hover:underline">
+                terms
+              </Link>{" "}
+              and{" "}
               <Link href="/shipping-returns" className="font-semibold text-accent hover:underline">
-                Shipping &amp; returns
+                shipping &amp; returns
               </Link>
               .
             </p>

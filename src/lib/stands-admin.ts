@@ -143,6 +143,17 @@ export async function saveStand(formData: FormData) {
     const cents = Math.round((parseFloat(dollars) || 0) * 100);
     const monthlyCents = Math.round((parseFloat(monthly) || 0) * 100);
 
+    // Stock: blank means "do not count this one", which is a different thing
+    // from zero. Zero is "none left, stop selling"; blank is "I do not track
+    // it". Coercing blank to 0 would take every untracked variant off sale.
+    const stockRaw = String(formData.get(`stock_${vid}`) ?? "").trim();
+    const stockQuantity =
+      stockRaw === "" ? null : Math.max(0, Math.floor(Number(stockRaw) || 0));
+
+    const lowRaw = String(formData.get(`low_${vid}`) ?? "").trim();
+    const lowStockThreshold =
+      lowRaw === "" ? 5 : Math.max(0, Math.floor(Number(lowRaw) || 0));
+
     // Sellable is saved whatever the price is. It used to be inside a
     // `if (cents > 0)` guard, so un-ticking a row with a blank price silently
     // did nothing and the variant stayed on sale.
@@ -151,6 +162,8 @@ export async function saveStand(formData: FormData) {
       .set({
         ...(cents > 0 ? { priceCents: cents } : {}),
         monthlyCents,
+        stockQuantity,
+        lowStockThreshold,
         active: formData.get(`active_${vid}`) === "on",
       })
       .where(eq(standVariantsTable.id, vid));

@@ -26,7 +26,6 @@ function loadTs(path) {
 }
 
 const { formatMoney, dollarsToCents, centsToInput } = loadTs("src/lib/money.ts");
-const { computeBestDeal } = loadTs("src/lib/deal-engine.ts");
 
 test("formatMoney renders cents as dollars with two decimals", () => {
   assert.equal(formatMoney(3999), "$39.99");
@@ -49,25 +48,4 @@ test("centsToInput round-trips through dollarsToCents", () => {
   for (const cents of [1, 5, 99, 100, 3999, 15999, 100000]) {
     assert.equal(dollarsToCents(centsToInput(cents)), cents);
   }
-});
-
-test("deal thresholds authored in dollars apply against a cents subtotal", () => {
-  const deals = [
-    {
-      id: "d1",
-      type: "spend_threshold",
-      enabled: true,
-      name: "$10 off $100+",
-      discountType: "flat",
-      discountValue: 10,
-      threshold: 100,
-    },
-  ];
-  const items = [{ productId: 1, price: 5000, quantity: 2 }]; // $100.00
-  const hit = computeBestDeal(deals, items, 10000);
-  assert.ok(hit, "deal should apply at exactly the threshold");
-  assert.equal(hit.discountAmount, 1000); // $10.00 in cents
-
-  const miss = computeBestDeal(deals, [{ productId: 1, price: 5000, quantity: 1 }], 5000);
-  assert.equal(miss, null, "deal should not apply below the threshold");
 });

@@ -60,6 +60,13 @@ const EXPECTED = {
     // cannot make the stand.
     "destination_url", "business_name", "logo_path",
   ],
+  // Enquiries are stored, not just emailed — email is a notification and
+  // notifications fail. If the only copy of a message is one that failed to
+  // send, the enquiry is gone.
+  contact_messages: [
+    "id", "name", "email", "message", "read_at", "handled_at", "created_at",
+  ],
+  newsletter_subscribers: ["id", "email", "unsubscribed_at", "created_at"],
   // Append-only history. `status` only ever shows the current state, so
   // without this "when did it ship?" is unanswerable.
   order_events: [
@@ -81,6 +88,8 @@ const EXPECTED_INDEXES = [
   // this a retried webhook is a duplicate order.
   "orders_payment_intent_key",
   "order_events_order_id_idx",
+  "contact_messages_created_at_idx",
+  "newsletter_subscribers_email_key",
 ];
 
 const connectionString = process.argv[2] || process.env.DATABASE_URL;

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BadgePercent,
   BookOpen,
   Building2,
   ClipboardList,
@@ -13,6 +12,7 @@ import {
   HelpCircle,
   Layers,
   LayoutDashboard,
+  Mail,
   Paintbrush,
   Package,
   Plug,
@@ -23,6 +23,7 @@ const NAV = [
   { type: "section", label: "Daily Work" },
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
+  { href: "/admin/messages", label: "Messages", icon: Mail },
 
   { type: "section", label: "Catalogue" },
   { href: "/admin/stands", label: "Stands", icon: Package },
@@ -39,7 +40,6 @@ const NAV = [
   { href: "/admin/store/info", label: "Business Info", icon: Building2 },
   { href: "/admin/store/hours", label: "Store Hours", icon: Clock3 },
   { href: "/admin/store/checkout", label: "Checkout", icon: CreditCard },
-  { href: "/admin/deals", label: "Deal Rules", icon: BadgePercent },
   { href: "/admin/store/advanced", label: "Integrations", icon: Plug },
 ] as const;
 

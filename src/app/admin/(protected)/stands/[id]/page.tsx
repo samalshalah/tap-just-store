@@ -153,7 +153,7 @@ export default async function EditStandPage({
         </div>
       </Section>
 
-      <Section title="Pricing" hint="Entered in dollars, stored in cents">
+      <Section title="Pricing and stock" hint="Prices in dollars. Leave stock blank to not count it — blank is different from zero.">
         <div className="space-y-2">
           {variants.map((v) => (
             <div
@@ -191,6 +191,33 @@ export default async function EditStandPage({
                   /mo
                 </label>
               )}
+              {/*
+                Blank means "not counted", which is not the same as zero. Zero
+                means none left; blank means this variant has no stock model.
+              */}
+              <label className="flex items-center gap-1.5 text-sm text-zinc-600">
+                Stock
+                <input
+                  name={`stock_${v.id}`}
+                  defaultValue={v.stockQuantity ?? ""}
+                  placeholder="—"
+                  min={0}
+                  step="1"
+                  type="number"
+                  className="w-20 rounded border border-zinc-300 px-2 py-1"
+                />
+              </label>
+              <label className="flex items-center gap-1.5 text-sm text-zinc-600">
+                Warn at
+                <input
+                  name={`low_${v.id}`}
+                  defaultValue={v.lowStockThreshold}
+                  min={0}
+                  step="1"
+                  type="number"
+                  className="w-16 rounded border border-zinc-300 px-2 py-1"
+                />
+              </label>
               <label className="ml-auto flex items-center gap-2 text-sm text-zinc-600">
                 <input type="checkbox" name={`active_${v.id}`} defaultChecked={v.active} />
                 Sellable

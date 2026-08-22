@@ -20,25 +20,6 @@ export type DealType =
   | "day_of_week"
   | "site_wide";
 
-export interface DealRule {
-  id: string;
-  type: DealType;
-  enabled: boolean;
-  name: string;
-  discountType?: "percent" | "flat";
-  discountValue?: number;
-  threshold?: number;
-  buyQty?: number;
-  getQty?: number;
-  minQty?: number;
-  /** Recurring day-of-week filter. Empty/undefined = every day. 0=Sun..6=Sat. */
-  days?: number[];
-  /** Optional start date (ISO YYYY-MM-DD). Deal inactive before this date. */
-  startDate?: string;
-  /** Optional end date (ISO YYYY-MM-DD, inclusive). Deal inactive after this date. */
-  endDate?: string;
-}
-
 export interface HomepageSection {
   visible?: boolean;
   label?: string;
@@ -85,7 +66,6 @@ export interface StoreHoursConfig {
 export interface OrderingConfig {
   pickup_enabled?: boolean;
   pickup_min_order?: number;
-  pickup_prep_time?: number;
   pickup_instructions?: string;
   delivery_enabled?: boolean;
   delivery_min_order?: number;
@@ -119,15 +99,9 @@ export interface CheckoutConfig {
   require_name?: boolean;
   require_email?: boolean;
   require_phone?: boolean;
-  guest_checkout?: boolean;
   order_notes?: boolean;
-  tipping_enabled?: boolean;
-  tip_presets?: number[];
   promo_codes_enabled?: boolean;
-  min_order_amount?: number;
   payment_cash?: boolean;
-  terms_required?: boolean;
-  terms_text?: string;
 }
 
 export interface PageSeoConfig {
@@ -229,7 +203,6 @@ export interface SiteSettings {
   location?: LocationConfig;
   contact?: ContactConfig;
   about?: AboutConfig;
-  deal_rules?: DealRule[];
   homepage_theme?: "theme1" | "theme2" | "theme3";
   homepage_section_order?: string[];
   homepage_sections?: {
