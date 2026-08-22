@@ -44,8 +44,12 @@ export const ordersTable = pgTable(
     customerPhone: text("customer_phone").notNull(),
     notes: text("notes"),
 
-    /** Fulfilment state. See the note above — this is not payment. */
-    status: text("status").notNull().default("pending"),
+    /**
+     * Fulfilment state — see order-status.ts for the machine. Not payment.
+     *
+     * new | in_production | shipped | delivered | cancelled
+     */
+    status: text("status").notNull().default("new"),
 
     // Amounts, all integer cents.
     subtotalCents: integer("subtotal_cents").notNull().default(0),
@@ -72,6 +76,20 @@ export const ordersTable = pgTable(
     stripePaymentIntentId: text("stripe_payment_intent_id"),
     stripeTaxCalculationId: text("stripe_tax_calculation_id"),
     paidAt: timestamp("paid_at", { withTimezone: true }),
+
+    // Shipping. The database enforces that a shipped or delivered order has
+    // both a carrier and a number, because the shipped email depends on it.
+    carrier: text("carrier"),
+    trackingNumber: text("tracking_number"),
+    shippedAt: timestamp("shipped_at", { withTimezone: true }),
+    deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+    /**
+     * Set when the shipped email actually goes out.
+     *
+     * A status walked back to production and forward again must not email the
+     * customer a second tracking link — this is what stops that.
+     */
+    shippedEmailSentAt: timestamp("shipped_email_sent_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

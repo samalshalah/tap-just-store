@@ -187,7 +187,7 @@ export async function POST(req: Request) {
           customerEmail: data.customerEmail,
           customerPhone: data.customerPhone,
           notes: data.notes ?? null,
-          status: "pending",
+          status: "new",
           subtotalCents: quote.subtotalCents,
           discountCents: quote.discountCents,
           discountLabel: quote.discountLabel,

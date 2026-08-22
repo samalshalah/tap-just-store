@@ -7,33 +7,16 @@
  * What remains is what the admin still has screens for.
  *
  * Stand editing does not come through here — it uses Server Actions in
- * stands-admin.ts, each of which authorises itself.
+ * stands-admin.ts, and orders use orders-admin.ts. Each of those authorises
+ * itself. Only the blog is left on this endpoint.
  */
 
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { ordersTable } from "@/lib/schema/orders";
 import { blogPostsTable } from "@/lib/schema/blogPosts";
 import { isAdminSession } from "@/lib/admin-auth";
-
-const ORDER_STATUSES = ["pending", "ready", "completed", "cancelled"] as const;
-type OrderStatus = (typeof ORDER_STATUSES)[number];
-
-async function setOrderStatus(payload: { id: number; status: string }) {
-  const { id, status } = payload;
-  if (!Number.isFinite(id)) throw new Error("Bad order id");
-  if (!ORDER_STATUSES.includes(status as OrderStatus)) {
-    throw new Error(`Unknown status: ${status}`);
-  }
-  await db
-    .update(ordersTable)
-    .set({ status })
-    .where(eq(ordersTable.id, id));
-  revalidatePath("/admin/orders");
-  return { ok: true as const };
-}
 
 interface BlogPostPayload {
   id?: number;
@@ -112,10 +95,6 @@ export async function POST(req: Request) {
 
   try {
     switch (body.action) {
-      case "setOrderStatus":
-        return NextResponse.json(
-          await setOrderStatus(body.payload as { id: number; status: string })
-        );
       case "upsertBlogPost":
         return NextResponse.json(
           await upsertBlogPost(body.payload as BlogPostPayload)

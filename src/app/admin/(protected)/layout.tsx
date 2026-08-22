@@ -46,10 +46,10 @@ export default async function ProtectedAdminLayout({
           </span>
           <span>
             <span className="block text-sm font-bold leading-tight text-slate-950">
-              Store Admin
+              {storeName}
             </span>
             <span className="block text-xs leading-tight text-slate-500">
-              White label storefront
+              Store admin
             </span>
           </span>
         </Link>

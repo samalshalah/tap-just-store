@@ -8,6 +8,7 @@ import {
   CreditCard,
   Link2,
   MapPin,
+  Truck,
 } from "lucide-react";
 import { getOrderById } from "@/lib/data";
 import { isAdminSession } from "@/lib/admin-auth";
@@ -15,6 +16,13 @@ import { formatMoney } from "@/lib/money";
 import { sizeLabel } from "@/lib/sizes";
 import { OPTION_LABELS, type OptionCode } from "@/lib/shop-filter";
 import { LEGAL } from "@/lib/legal";
+import {
+  CARRIERS,
+  isCarrierCode,
+  STATUS_LABELS,
+  trackingUrl,
+  type OrderStatus,
+} from "@/lib/order-status";
 
 export const metadata: Metadata = {
   title: "Order Confirmed",
@@ -55,6 +63,12 @@ export default async function OrderConfirmationPage({
 
   const paid = order.paymentStatus === "paid";
   const branded = order.items.some((i) => i.optionCode !== "standard_direct");
+  const status = (order.status as OrderStatus) ?? "new";
+  const track = trackingUrl(order.carrier, order.trackingNumber);
+  const carrierLabel =
+    order.carrier && isCarrierCode(order.carrier)
+      ? CARRIERS[order.carrier].label
+      : null;
 
   return (
     <section className="min-h-[80vh] bg-background py-16">
@@ -172,18 +186,42 @@ export default async function OrderConfirmationPage({
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
-            <div>
+            {track ? (
+              <Truck className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+            ) : (
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+            )}
+            <div className="min-w-0">
               <p className="mb-0.5 text-xs uppercase tracking-wider text-muted-foreground">
-                When it ships
+                {track ? "On its way" : "When it ships"}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {branded
-                  ? `Your stands are printed to order, so they leave us in ${LEGAL.dispatchDaysBranded}.`
-                  : `Dispatched in ${LEGAL.dispatchDaysStandard}.`}{" "}
-                Delivery usually takes {LEGAL.transitDays} after that. We email
-                a tracking number as soon as it is on its way.
-              </p>
+              {track ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    {STATUS_LABELS[status]} with {carrierLabel}. Tracking number{" "}
+                    <span className="break-all font-mono text-foreground">
+                      {order.trackingNumber}
+                    </span>
+                    .
+                  </p>
+                  <a
+                    href={track}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-background transition-opacity hover:opacity-90"
+                  >
+                    Track your parcel
+                  </a>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {branded
+                    ? `Your stands are printed to order, so they leave us in ${LEGAL.dispatchDaysBranded}.`
+                    : `Dispatched in ${LEGAL.dispatchDaysStandard}.`}{" "}
+                  Delivery usually takes {LEGAL.transitDays} after that. We email
+                  a tracking number as soon as it is on its way.
+                </p>
+              )}
             </div>
           </div>
 

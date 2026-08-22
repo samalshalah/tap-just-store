@@ -30,6 +30,8 @@ const EXPECTED = {
   stand_variants: [
     "id", "stand_id", "size", "option_code", "price_cents", "monthly_cents",
     "sku", "active",
+    // NULL means untracked, so counting stock stays opt-in per variant.
+    "stock_quantity", "low_stock_threshold",
   ],
   stand_business_uses: ["stand_id", "business_use_id"],
   volume_tiers: ["id", "min_quantity", "discount_percent", "label"],
@@ -46,6 +48,10 @@ const EXPECTED = {
     "ship_postal_code", "ship_country",
     "payment_status", "stripe_payment_intent_id", "stripe_tax_calculation_id",
     "paid_at",
+    // Phase 04. A shipped order without these has nothing for the shipped
+    // email to link to, which is why the database constrains it too.
+    "carrier", "tracking_number", "shipped_at", "delivered_at",
+    "shipped_email_sent_at",
   ],
   order_items: [
     "id", "order_id", "stand_variant_id", "stand_name", "size", "option_code",
@@ -53,6 +59,12 @@ const EXPECTED = {
     // What gets programmed and printed. Without these the production queue
     // cannot make the stand.
     "destination_url", "business_name", "logo_path",
+  ],
+  // Append-only history. `status` only ever shows the current state, so
+  // without this "when did it ship?" is unanswerable.
+  order_events: [
+    "id", "order_id", "kind", "from_value", "to_value", "note", "actor",
+    "created_at",
   ],
 };
 
@@ -68,6 +80,7 @@ const EXPECTED_INDEXES = [
   // The idempotency guarantee: one order per Stripe payment intent. Without
   // this a retried webhook is a duplicate order.
   "orders_payment_intent_key",
+  "order_events_order_id_idx",
 ];
 
 const connectionString = process.argv[2] || process.env.DATABASE_URL;

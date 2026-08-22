@@ -1,5 +1,7 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql, isNotNull } from "drizzle-orm";
 import { db, ordersTable, orderItemsTable } from "@/lib/db";
+import { orderEventsTable } from "@/lib/schema/orderEvents";
+import { standVariantsTable } from "@/lib/schema/standVariants";
 import { verifyWebhook } from "@/lib/stripe";
 import { recordTaxTransaction } from "@/lib/tax";
 import { getSiteSettings } from "@/lib/settings";
@@ -70,32 +72,68 @@ export async function POST(req: Request) {
 }
 
 async function markPaid(paymentIntentId: string, req: Request) {
-  // Conditioned on `unpaid`, so a redelivered event updates nothing and the
-  // customer is not emailed a second receipt.
-  const [order] = await db
-    .update(ordersTable)
-    .set({
-      paymentStatus: "paid",
-      paidAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(
-      and(
-        eq(ordersTable.stripePaymentIntentId, paymentIntentId),
-        eq(ordersTable.paymentStatus, "unpaid")
-      )
-    )
-    .returning();
+  const now = new Date();
 
-  if (!order) {
+  const claimed = await db.transaction(async (tx) => {
+    // Conditioned on `unpaid`, so a redelivered event updates nothing: the
+    // customer is not emailed a second receipt and stock is not decremented
+    // twice. Everything below happens only for the caller that wins this.
+    const [order] = await tx
+      .update(ordersTable)
+      .set({ paymentStatus: "paid", paidAt: now, updatedAt: now })
+      .where(
+        and(
+          eq(ordersTable.stripePaymentIntentId, paymentIntentId),
+          eq(ordersTable.paymentStatus, "unpaid")
+        )
+      )
+      .returning();
+
+    if (!order) return null;
+
+    const items = await tx
+      .select()
+      .from(orderItemsTable)
+      .where(eq(orderItemsTable.orderId, order.id));
+
+    // Stock comes down when the money lands, not when the order is created —
+    // an abandoned checkout must not hold inventory. Done inside the same
+    // transaction as the paid flag so the two cannot disagree.
+    //
+    // GREATEST(0, ...) rather than a read-then-write: two orders paying at the
+    // same moment would otherwise both read the old count and oversell. A
+    // variant with a NULL count is untracked and is skipped.
+    for (const item of items) {
+      if (item.standVariantId == null) continue;
+      await tx
+        .update(standVariantsTable)
+        .set({
+          stockQuantity: sql`GREATEST(0, ${standVariantsTable.stockQuantity} - ${item.quantity})`,
+        })
+        .where(
+          and(
+            eq(standVariantsTable.id, item.standVariantId),
+            isNotNull(standVariantsTable.stockQuantity)
+          )
+        );
+    }
+
+    await tx.insert(orderEventsTable).values({
+      orderId: order.id,
+      kind: "payment",
+      fromValue: "unpaid",
+      toValue: "paid",
+      actor: "stripe",
+    });
+
+    return { order, items };
+  });
+
+  if (!claimed) {
     console.log("[stripe] payment_intent.succeeded already handled:", paymentIntentId);
     return;
   }
-
-  const items = await db
-    .select()
-    .from(orderItemsTable)
-    .where(eq(orderItemsTable.orderId, order.id));
+  const { order, items } = claimed;
 
   // Only now does this sale become a tax record. A calculation made for a
   // customer who abandoned checkout must never reach a filing.
@@ -138,7 +176,7 @@ async function markPaid(paymentIntentId: string, req: Request) {
 }
 
 async function markFailed(paymentIntentId: string) {
-  await db
+  const [order] = await db
     .update(ordersTable)
     .set({ paymentStatus: "failed", updatedAt: new Date() })
     .where(
@@ -146,7 +184,18 @@ async function markFailed(paymentIntentId: string) {
         eq(ordersTable.stripePaymentIntentId, paymentIntentId),
         eq(ordersTable.paymentStatus, "unpaid")
       )
-    );
+    )
+    .returning();
+
+  if (order) {
+    await db.insert(orderEventsTable).values({
+      orderId: order.id,
+      kind: "payment",
+      fromValue: "unpaid",
+      toValue: "failed",
+      actor: "stripe",
+    });
+  }
 }
 
 async function markRefunded(paymentIntent: string | { id: string } | null) {
@@ -154,8 +203,24 @@ async function markRefunded(paymentIntent: string | { id: string } | null) {
   if (!id) return;
   // Deliberately does not touch `status`: a refunded order may still have
   // shipped, and the fulfilment state is a separate fact from the money.
-  await db
+  const [order] = await db
     .update(ordersTable)
     .set({ paymentStatus: "refunded", updatedAt: new Date() })
-    .where(eq(ordersTable.stripePaymentIntentId, id));
+    .where(
+      and(
+        eq(ordersTable.stripePaymentIntentId, id),
+        eq(ordersTable.paymentStatus, "paid")
+      )
+    )
+    .returning();
+
+  if (order) {
+    await db.insert(orderEventsTable).values({
+      orderId: order.id,
+      kind: "payment",
+      fromValue: "paid",
+      toValue: "refunded",
+      actor: "stripe",
+    });
+  }
 }

@@ -108,7 +108,7 @@ async function seedOrder(suffix) {
        ship_postal_code, payment_status, stripe_payment_intent_id
      ) values (
        $1,'Sim Customer','sim@example.com','2025550100',
-       'pending', 3900, 0, '', 495, 234, 4629, 'Sim Customer', '1 Test St',
+       'new', 3900, 0, '', 495, 234, 4629, 'Sim Customer', '1 Test St',
        'Washington','DC','20001','unpaid',$2
      ) returning id`,
     [code, intentId]
@@ -165,7 +165,7 @@ console.log("\nA real payment");
   check("paid_at is stamped", Boolean(after?.paid_at));
   check(
     "fulfilment status untouched",
-    after?.status === "pending",
+    after?.status === "new",
     "payment and fulfilment are separate facts"
   );
 
@@ -202,9 +202,70 @@ console.log("\nA refund");
   check("order is marked refunded", row?.payment_status === "refunded");
   check(
     "fulfilment status still untouched",
-    row?.status === "pending",
+    row?.status === "new",
     "a refunded order may already have shipped"
   );
+}
+
+console.log("\nStock and the audit trail");
+{
+  // Stock must come down when the money lands, not when the order is created:
+  // an abandoned checkout must not hold inventory.
+  const { rows: variants } = await client.query(
+    `select id from stand_variants where active = true order by id limit 1`
+  );
+  if (variants.length === 0) {
+    check("a variant exists to test stock against", false, "no active variants");
+  } else {
+    const variantId = variants[0].id;
+    await client.query(`update stand_variants set stock_quantity = 10 where id = $1`, [
+      variantId,
+    ]);
+
+    const { orderId, intentId } = await seedOrder("stock");
+    await client.query(`update order_items set stand_variant_id = $1 where order_id = $2`, [
+      variantId,
+      orderId,
+    ]);
+
+    const payload = event("payment_intent.succeeded", { id: intentId });
+    await post(payload, sign(payload, now));
+
+    const { rows: after } = await client.query(
+      `select stock_quantity from stand_variants where id = $1`,
+      [variantId]
+    );
+    check("stock is decremented on payment", after[0].stock_quantity === 9, `now ${after[0].stock_quantity}`);
+
+    // Stripe redelivers. Decrementing twice for one sale is silent shrinkage.
+    await post(payload, sign(payload, now));
+    const { rows: again } = await client.query(
+      `select stock_quantity from stand_variants where id = $1`,
+      [variantId]
+    );
+    check(
+      "a redelivered event does not decrement again",
+      again[0].stock_quantity === 9,
+      `now ${again[0].stock_quantity}`
+    );
+
+    const { rows: events } = await client.query(
+      `select kind, from_value, to_value, actor from order_events where order_id = $1`,
+      [orderId]
+    );
+    check("the payment is recorded in the audit trail", events.length === 1, `${events.length} events`);
+    check(
+      "and it records what actually happened",
+      events[0]?.kind === "payment" &&
+        events[0]?.from_value === "unpaid" &&
+        events[0]?.to_value === "paid" &&
+        events[0]?.actor === "stripe"
+    );
+
+    await client.query(`update stand_variants set stock_quantity = null where id = $1`, [
+      variantId,
+    ]);
+  }
 }
 
 await client.query(`delete from orders where stripe_payment_intent_id like 'pi_sim_%'`);

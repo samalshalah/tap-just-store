@@ -33,6 +33,15 @@ export const standVariantsTable = pgTable(
     monthlyCents: integer("monthly_cents").notNull().default(0),
     sku: text("sku"),
     active: boolean("active").notNull().default(true),
+    /**
+     * Units on the shelf, or NULL for "not counted".
+     *
+     * Nullable on purpose. Counting stock is opt-in per variant rather than a
+     * model imposed on every row — a made-to-order branded stand does not have
+     * a stock level in the same sense a pre-printed standard one does.
+     */
+    stockQuantity: integer("stock_quantity"),
+    lowStockThreshold: integer("low_stock_threshold").notNull().default(5),
   },
   // These constraints already exist in the hand-written SQL. They live here
   // too because db:push generates from this file — a push without them would
@@ -47,6 +56,10 @@ export const standVariantsTable = pgTable(
     ),
     check("stand_variants_price_check", sql`${t.priceCents} >= 0`),
     check("stand_variants_monthly_check", sql`${t.monthlyCents} >= 0`),
+    check(
+      "stand_variants_stock_check",
+      sql`${t.stockQuantity} IS NULL OR ${t.stockQuantity} >= 0`
+    ),
   ]
 );
 

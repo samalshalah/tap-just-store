@@ -1,5 +1,6 @@
 export * from "./orders";
 export * from "./orderItems";
+export * from "./orderEvents";
 export * from "./siteSettings";
 export * from "./adminUsers";
 export * from "./devices";

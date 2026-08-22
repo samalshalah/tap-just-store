@@ -23,7 +23,9 @@ async function getDashboardStats() {
     const [pendingOrders] = await db
       .select({ n: count() })
       .from(ordersTable)
-      .where(sql`${ordersTable.status} = 'pending'`);
+      // "Still to make" is the number that matters on a morning: paid orders
+      // that have not shipped. `pending` was the pickup vocabulary.
+      .where(sql`${ordersTable.status} IN ('new','in_production')`);
     const [todayOrders] = await db
       .select({ n: count() })
       .from(ordersTable)
@@ -77,7 +79,7 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         <Card label="Today's Orders" value={stats.todayOrders} />
         <Card label="Today's Revenue" value={formatMoney(stats.todayRevenue)} />
-        <Card label="Pending Orders" value={stats.pendingOrders} />
+        <Card label="Still to make" value={stats.pendingOrders} />
         <Card label="Live Stands" value={stats.standCount} />
       </div>
 
@@ -90,9 +92,9 @@ export default async function AdminDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <QuickLink
-            href="/admin/orders"
+            href="/admin/orders?status=new"
             title="Orders"
-            desc="New orders, status, and what needs printing or shipping."
+            desc="What needs printing, tracking numbers, and order history."
           />
           <QuickLink
             href="/admin/stands"
