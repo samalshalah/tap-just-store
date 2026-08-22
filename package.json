@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "db:push": "drizzle-kit push --config=drizzle.config.ts",
     "test": "node scripts/money.test.mjs && node --experimental-strip-types --no-warnings scripts/shop-filter.test.mjs && node --experimental-strip-types --no-warnings scripts/theme.test.mjs && node --experimental-strip-types --no-warnings scripts/landing-images.test.mjs && node --experimental-strip-types --no-warnings scripts/sizes.test.mjs && node --experimental-strip-types --no-warnings scripts/pricing-copy.test.mjs && node --experimental-strip-types --no-warnings scripts/destination.test.mjs && node --experimental-strip-types --no-warnings scripts/qr.test.mjs && node --experimental-strip-types --no-warnings scripts/pricing.test.mjs && node --experimental-strip-types --no-warnings scripts/stand-copy.test.mjs && node --experimental-strip-types --no-warnings scripts/order-email.test.mjs",
-    "check:schema": "node scripts/check-schema.mjs"
+    "check:schema": "node scripts/check-schema.mjs",
+    "test:webhook": "node scripts/webhook-sim.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

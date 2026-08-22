@@ -74,13 +74,37 @@ export async function createPaymentIntent({
 }
 
 /**
+ * A client used only for verifying webhook signatures.
+ *
+ * Verification is pure HMAC over the request body — it never calls the API —
+ * but the SDK only exposes it as an instance method, so an instance is needed.
+ * Deliberately not `stripe()`: that one throws without STRIPE_SECRET_KEY, and
+ * webhook verification must not depend on an unrelated variable. The webhook
+ * simulator caught exactly that, where a correctly signed event was rejected
+ * because the API key happened to be absent.
+ */
+let verifier: Stripe | null = null;
+
+function webhookVerifier(): Stripe {
+  if (verifier) return verifier;
+  verifier = new Stripe(process.env.STRIPE_SECRET_KEY ?? "sk_unused_for_verification", {
+    httpClient: Stripe.createFetchHttpClient(),
+    telemetry: false,
+  });
+  return verifier;
+}
+
+/**
  * Verify a webhook signature.
  *
- * Kept here rather than inline in the route because it is the security
- * boundary of the whole payment flow: the webhook is what marks an order paid,
- * so an unverified body is an attacker marking their own order paid. The async
- * variant is required — the synchronous one uses Node crypto, which does not
- * exist on Workers.
+ * This is the security boundary of the whole payment flow: the webhook is what
+ * marks an order paid, so an unverified body is an attacker marking their own
+ * order paid. Stripe signs `<timestamp>.<raw body>` with the endpoint secret,
+ * and the check includes a timestamp tolerance so a captured request cannot be
+ * replayed later.
+ *
+ * The async variant is required — the synchronous one uses Node crypto, which
+ * does not exist on Workers.
  */
 export async function verifyWebhook(
   payload: string,
@@ -90,7 +114,7 @@ export async function verifyWebhook(
   if (!secret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
   if (!signature) throw new Error("Missing Stripe signature header");
 
-  return stripe().webhooks.constructEventAsync(
+  return webhookVerifier().webhooks.constructEventAsync(
     payload,
     signature,
     secret,
